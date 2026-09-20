@@ -1,0 +1,11 @@
+{
+  "name": "Rainbow Magic Fairy Hunt",
+  "short_name": "Fairy Hunt",
+  "description": "Rainbow Magic Fairy Hunt - touch, keyboard and gamepad edition.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#15142d",
+  "theme_color": "#15142d"
+}
