@@ -1,0 +1,2960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#15142d" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Rainbow Fairy Hunt" />
+<link rel="manifest" href="manifest.webmanifest" />
+<title>Rainbow Magic Fairy Hunt - Touch Edition</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --panel: rgba(26, 22, 64, 0.86);
+    --panel2: rgba(54, 39, 106, 0.92);
+    --soft: rgba(255,255,255,0.15);
+    --text: #fffafc;
+    --textDim: rgba(255,255,255,0.82);
+    --gold: #ffe176;
+    --pink: #ff72b2;
+    --violet: #8467d7;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    background: radial-gradient(circle at top, #45398c 0%, #15142d 60%, #090913 100%);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--text);
+  }
+  body {
+    display: grid;
+    place-items: center;
+    padding: 14px;
+    overflow: hidden;
+  }
+  #wrap {
+    width: min(100%, 1320px);
+    position: relative;
+  }
+  canvas {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    display: block;
+    border-radius: 24px;
+    box-shadow: 0 28px 80px rgba(0,0,0,0.46);
+    background: #89dbff;
+    outline: none;
+  }
+  #uiBar {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    gap: 8px;
+    z-index: 3;
+  }
+  .uiBtn {
+    appearance: none;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(13, 17, 42, 0.72);
+    color: white;
+    padding: 10px 14px;
+    font-weight: 700;
+    font-size: 13px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+  }
+  .uiBtn:hover { background: rgba(39, 46, 88, 0.88); }
+  #tip {
+    position: absolute;
+    left: 14px;
+    bottom: 12px;
+    right: 14px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: end;
+    font-size: 12px;
+    color: rgba(255,255,255,.82);
+    text-shadow: 0 1px 3px #000;
+    pointer-events: none;
+    z-index: 2;
+  }
+  #tip span {
+    background: rgba(7, 9, 30, .42);
+    padding: 7px 10px;
+    border-radius: 999px;
+    backdrop-filter: blur(5px);
+  }
+  #tip strong { color: white; }
+  @media (max-width: 720px) {
+    body { padding: 0; background: #111; }
+    canvas { border-radius: 0; }
+    #tip { display: none; }
+    #uiBar { top: 8px; right: 8px; }
+    .uiBtn { padding: 8px 11px; font-size: 12px; }
+  }
+
+
+  /* Tablet / touchscreen controls */
+  #touchControls {
+    display: none;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+    padding: 5px 28px 4px;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  #touchStick {
+    --stick-x: 0px;
+    --stick-y: 0px;
+    width: 224px;
+    height: 224px;
+    flex: 0 0 224px;
+    position: relative;
+    border-radius: 50%;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(255,255,255,.08) 0 31%, transparent 32%),
+      radial-gradient(circle at 50% 50%, rgba(91,69,151,.93) 0 66%, rgba(31,25,74,.96) 67% 100%);
+    border: 2px solid rgba(255,255,255,.20);
+    box-shadow: inset 0 0 0 7px rgba(255,255,255,.035), 0 8px 24px rgba(0,0,0,.30);
+  }
+  .touchDir {
+    position: absolute;
+    width: 68px;
+    height: 68px;
+    min-height: 0;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 22px;
+    background: rgba(255,255,255,.07);
+    color: rgba(255,255,255,.72);
+    font: 950 31px/1 system-ui, sans-serif;
+    pointer-events: none;
+    transition: background .08s ease, color .08s ease, transform .08s ease;
+  }
+  .touchDir.active {
+    background: rgba(255,225,118,.86);
+    color: #36265f;
+    transform: scale(1.05);
+  }
+  .touchDir.up { left: 78px; top: 8px; }
+  .touchDir.down { left: 78px; bottom: 8px; }
+  .touchDir.left { left: 8px; top: 78px; }
+  .touchDir.right { right: 8px; top: 78px; }
+  #touchKnob {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 82px;
+    height: 82px;
+    margin: -41px 0 0 -41px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(160deg, #ff8fc5, #896eff 72%);
+    border: 3px solid rgba(255,255,255,.72);
+    color: white;
+    font-size: 36px;
+    box-shadow: 0 7px 20px rgba(0,0,0,.34), inset 0 2px 5px rgba(255,255,255,.34);
+    transform: translate(var(--stick-x), var(--stick-y));
+    transition: transform .09s ease-out;
+    pointer-events: none;
+    z-index: 3;
+  }
+  #touchStick.tracking #touchKnob { transition: none; }
+  .touchActions {
+    min-width: 0;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 24px;
+  }
+  .touchAction {
+    appearance: none;
+    width: 112px;
+    height: 112px;
+    min-height: 112px;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.36);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: white;
+    background: linear-gradient(160deg, rgba(132,103,215,.98), rgba(67,50,137,.99));
+    box-shadow: 0 8px 24px rgba(0,0,0,.32), inset 0 2px rgba(255,255,255,.12);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .touchAction.jump {
+    width: 132px;
+    height: 132px;
+    min-height: 132px;
+    background: linear-gradient(160deg, #ff8ac1, #d94794 72%);
+    border-color: rgba(255,255,255,.64);
+  }
+  .touchAction strong { font-size: 30px; line-height: 1; }
+  .touchAction span { font-size: 11px; font-weight: 900; letter-spacing: .08em; }
+  .touchAction.jump strong { font-size: 39px; }
+  .touchAction.pressed { transform: scale(.95); filter: brightness(1.12); }
+
+  body.touch-capable {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    padding: 0;
+    place-items: stretch;
+    overscroll-behavior: none;
+  }
+  body.touch-capable #wrap {
+    width: 100%;
+    max-width: none;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 4px;
+    padding: 4px max(4px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left));
+  }
+  body.touch-capable canvas {
+    grid-row: 1;
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    justify-self: center;
+    align-self: center;
+    aspect-ratio: 16 / 9;
+    border-radius: 14px;
+    touch-action: none;
+  }
+  body.touch-capable #touchControls { display: flex; grid-row: 2; }
+  body.touch-capable #tip { display: none; }
+  body.touch-capable #uiBar { top: 8px; right: max(8px, env(safe-area-inset-right)); }
+
+  @media (max-height: 740px) {
+    body.touch-capable #touchControls { padding: 3px 18px 2px; gap: 18px; }
+    body.touch-capable #touchStick { width: 184px; height: 184px; flex-basis: 184px; }
+    body.touch-capable .touchDir { width: 58px; height: 58px; font-size: 27px; border-radius: 18px; }
+    body.touch-capable .touchDir.up { left: 63px; top: 5px; }
+    body.touch-capable .touchDir.down { left: 63px; bottom: 5px; }
+    body.touch-capable .touchDir.left { left: 5px; top: 63px; }
+    body.touch-capable .touchDir.right { right: 5px; top: 63px; }
+    body.touch-capable #touchKnob { width: 70px; height: 70px; margin: -35px 0 0 -35px; font-size: 31px; }
+    body.touch-capable .touchAction { width: 92px; height: 92px; min-height: 92px; }
+    body.touch-capable .touchAction.jump { width: 110px; height: 110px; min-height: 110px; }
+    body.touch-capable .touchAction strong { font-size: 25px; }
+    body.touch-capable .touchAction.jump strong { font-size: 34px; }
+    body.touch-capable .touchActions { gap: 16px; }
+  }
+  @media (max-width: 700px), (max-height: 590px) {
+    body.touch-capable #touchControls { padding: 2px 10px 0; gap: 12px; }
+    body.touch-capable #touchStick { width: 154px; height: 154px; flex-basis: 154px; }
+    body.touch-capable .touchDir { width: 48px; height: 48px; font-size: 22px; border-radius: 15px; }
+    body.touch-capable .touchDir.up { left: 53px; top: 4px; }
+    body.touch-capable .touchDir.down { left: 53px; bottom: 4px; }
+    body.touch-capable .touchDir.left { left: 4px; top: 53px; }
+    body.touch-capable .touchDir.right { right: 4px; top: 53px; }
+    body.touch-capable #touchKnob { width: 58px; height: 58px; margin: -29px 0 0 -29px; font-size: 26px; }
+    body.touch-capable .touchAction { width: 74px; height: 74px; min-height: 74px; }
+    body.touch-capable .touchAction.jump { width: 90px; height: 90px; min-height: 90px; }
+    body.touch-capable .touchAction strong { font-size: 20px; }
+    body.touch-capable .touchAction.jump strong { font-size: 28px; }
+    body.touch-capable .touchAction span { font-size: 9px; }
+    body.touch-capable .touchActions { gap: 10px; }
+    body.touch-capable .uiBtn { padding: 7px 9px; font-size: 11px; }
+  }
+
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game" width="1280" height="720" tabindex="0" aria-label="Rainbow Magic Fairy Hunt game"></canvas>
+  <div id="uiBar">
+    <button id="soundBtn" class="uiBtn" type="button">SFX: On</button>
+    <button id="musicBtn" class="uiBtn" type="button">Music: On</button>
+    <button id="fsBtn" class="uiBtn" type="button">Full Screen</button>
+  </div>
+  <div id="tip">
+    <span><strong>Keyboard</strong> - A/D move, Up/Down ladders, Space jump, P pause, F full screen, M sound, N music</span>
+    <span id="padStatus"><strong>Controller</strong> - press a button to connect your 8BitDo SN30 Pro - jump with B</span>
+  </div>
+
+  <div id="touchControls" aria-label="Touch controls">
+    <div id="touchStick" role="group" aria-label="Movement joystick">
+      <div class="touchDir up" data-dir="up" aria-hidden="true">▲</div>
+      <div class="touchDir left" data-dir="left" aria-hidden="true">◀</div>
+      <div class="touchDir right" data-dir="right" aria-hidden="true">▶</div>
+      <div class="touchDir down" data-dir="down" aria-hidden="true">▼</div>
+      <div id="touchKnob" aria-hidden="true">✦</div>
+    </div>
+    <div class="touchActions">
+      <button id="touchJumpBtn" class="touchAction jump" type="button" aria-label="Jump or confirm"><strong>★</strong><span>JUMP / OK</span></button>
+      <button id="touchPauseBtn" class="touchAction" type="button" aria-label="Pause or resume"><strong>Ⅱ</strong><span>PAUSE</span></button>
+    </div>
+  </div>
+</div>
+<script>
+(() => {
+  "use strict";
+
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
+  const wrap = document.getElementById("wrap");
+  const padStatus = document.getElementById("padStatus");
+  const soundBtn = document.getElementById("soundBtn");
+  const musicBtn = document.getElementById("musicBtn");
+  const fsBtn = document.getElementById("fsBtn");
+  const touchControls = document.getElementById("touchControls");
+  const touchStick = document.getElementById("touchStick");
+  const touchJumpBtn = document.getElementById("touchJumpBtn");
+  const touchPauseBtn = document.getElementById("touchPauseBtn");
+
+  const touchCapable = (navigator.maxTouchPoints || 0) > 0 || "ontouchstart" in window || matchMedia("(pointer: coarse)").matches;
+  if (touchCapable) document.body.classList.add("touch-capable");
+
+  const W = canvas.width;
+  const H = canvas.height;
+  const LEVEL_WIDTH = 5600;
+  const GROUND_Y = 610;
+  const keys = new Set();
+  const keysPressed = new Set();
+
+  const fairies = [
+    { name: "Ruby the Red Fairy", short: "Ruby", color: "#ef455e", sky1: "#ffd2dc", sky2: "#ff8a9b", land: "#d45b70", theme: "Ruby Meadow", accent: "#ff5072" },
+    { name: "Amber the Orange Fairy", short: "Amber", color: "#ff9837", sky1: "#ffe2b3", sky2: "#ffae57", land: "#de8740", theme: "Amber Orchard", accent: "#ff8b2a" },
+    { name: "Saffron the Yellow Fairy", short: "Saffron", color: "#ffe043", sky1: "#fff6bf", sky2: "#ffd95a", land: "#d4b03b", theme: "Saffron Sunfields", accent: "#ffd531" },
+    { name: "Fern the Green Fairy", short: "Fern", color: "#49cb6e", sky1: "#d7f6d5", sky2: "#72d891", land: "#3f9860", theme: "Fern Forest", accent: "#34b95a" },
+    { name: "Sky the Blue Fairy", short: "Sky", color: "#54a8ff", sky1: "#c9efff", sky2: "#70c3ff", land: "#4e8fc0", theme: "Sky Cloud Coast", accent: "#49a5ff" },
+    { name: "Izzy the Indigo Fairy", short: "Izzy", color: "#6f66ec", sky1: "#d2ceff", sky2: "#8b83f0", land: "#5b58ab", theme: "Izzy Twilight Hills", accent: "#7268f0" },
+    { name: "Heather the Violet Fairy", short: "Heather", color: "#b55fdb", sky1: "#f0d9ff", sky2: "#bc7de0", land: "#8b57aa", theme: "Heather Moon Garden", accent: "#b04ed7" }
+  ];
+
+  const characters = [
+    {
+      name: "Kirsty",
+      hair: "#6c412b",
+      hair2: "#8d5938",
+      shirt: "#39c9ca",
+      skirt: "#f4f8ff",
+      trim: "#1a9ca3",
+      leggings: "#ffe7f1",
+      shoes: "#ff77ab",
+      skin: "#f2c7a3",
+      bow: "#ff6fb0",
+      cheeks: "#ef9aaa",
+      eyes: "#4d3d3a",
+      hairStyle: "bob",
+      locket: false
+    },
+    {
+      name: "Rachael",
+      hair: "#d09a53",
+      hair2: "#efbb70",
+      shirt: "#ff79b9",
+      skirt: "#ffe3ef",
+      trim: "#d94f91",
+      leggings: "#f4f1ff",
+      shoes: "#8c63ff",
+      skin: "#f3c8a5",
+      bow: "#63a5ff",
+      cheeks: "#f39aa6",
+      eyes: "#4f83bf",
+      hairStyle: "curlyPonytail",
+      locket: true
+    }
+  ];
+
+  let gamepadName = "";
+  let state = "title";
+  let selectedCharacter = 0;
+  let currentLevel = 0;
+  let level = null;
+  let player = null;
+  let cameraX = 0;
+  let score = 0;
+  let totalGems = 0;
+  let lastTime = performance.now();
+  let frame = 0;
+  let paused = false;
+  let soundOn = true;
+  let musicOn = true;
+  let audioCtx = null;
+  let screenShake = 0;
+  let message = "";
+  let messageTimer = 0;
+  let musicTimer = 0;
+  let musicStep = 0;
+  let lastMusicTheme = "title";
+  let activeIcicles = [];
+  let comicBursts = [];
+
+  let previousPad = {
+    jump: false,
+    start: false,
+    left: false,
+    right: false,
+    confirm: false,
+    fullscreen: false
+  };
+
+  const touchInput = { left: false, right: false, up: false, down: false, jump: false, pause: false };
+  let previousTouch = { left: false, right: false, jump: false, pause: false };
+  let touchStickPointer = null;
+  const TOUCH_DEAD_ZONE = 0.12;
+  const TOUCH_AXIS_THRESHOLD = 0.28;
+
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function rectsOverlap(a, b) {
+    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  }
+
+  function initAudio() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) {}
+    }
+    if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+  }
+
+  function tone(freq, duration = 0.08, type = "sine", volume = 0.04, slide = 0) {
+    if (!soundOn && type !== "music") return;
+    initAudio();
+    if (!audioCtx || !freq) return;
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(2200, now);
+    osc.type = type === "music" ? "square" : type;
+    osc.frequency.setValueAtTime(freq, now);
+    if (slide) osc.frequency.linearRampToValueAtTime(freq + slide, now + duration);
+    gain.gain.setValueAtTime(volume, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    osc.connect(filter).connect(gain).connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + duration);
+  }
+
+  function playSfx(freq, duration, type, volume, slide) {
+    if (!soundOn) return;
+    tone(freq, duration, type, volume, slide);
+  }
+
+  function jingle() {
+    if (!soundOn) return;
+    [523, 659, 784, 988, 1175].forEach((f, i) => setTimeout(() => playSfx(f, 0.12, "triangle", 0.032), i * 85));
+  }
+
+  function goblinFart() {
+    if (!soundOn) return;
+    initAudio();
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(115 + Math.random() * 18, now);
+    osc.frequency.exponentialRampToValueAtTime(42, now + 0.24);
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(520, now);
+    filter.frequency.exponentialRampToValueAtTime(150, now + 0.24);
+    gain.gain.setValueAtTime(0.075, now);
+    gain.gain.linearRampToValueAtTime(0.115, now + 0.045);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.31);
+    osc.connect(filter).connect(gain).connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.28);
+
+    const pop = audioCtx.createOscillator();
+    const popGain = audioCtx.createGain();
+    pop.type = "square";
+    pop.frequency.setValueAtTime(82, now + 0.04);
+    pop.frequency.exponentialRampToValueAtTime(52, now + 0.13);
+    popGain.gain.setValueAtTime(0.046, now + 0.04);
+    popGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.17);
+    pop.connect(popGain).connect(audioCtx.destination);
+    pop.start(now + 0.04);
+    pop.stop(now + 0.15);
+  }
+
+  function shoutWooHoo() {
+    if (!soundOn || !("speechSynthesis" in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance("Woo hoo!");
+      utterance.lang = "en-GB";
+      utterance.volume = 1.0;
+      utterance.rate = selectedCharacter === 0 ? 1.18 : 1.14;
+      utterance.pitch = selectedCharacter === 0 ? 1.55 : 1.68;
+
+      const voices = window.speechSynthesis.getVoices();
+      const preferred = voices.find(v =>
+        /^en[-_](GB|IE)/i.test(v.lang) &&
+        /female|samantha|serena|susan|hazel|fiona|kate|victoria/i.test(v.name)
+      ) || voices.find(v => /^en[-_](GB|IE)/i.test(v.lang)) ||
+           voices.find(v => /^en/i.test(v.lang));
+
+      if (preferred) utterance.voice = preferred;
+      window.speechSynthesis.speak(utterance);
+    } catch (_) {}
+  }
+
+  const songs = {
+    title: {
+      lead: [523, 659, 784, 659, 698, 784, 880, 784, 784, 988, 1047, 988, 880, 784, 698, 659],
+      bass: [262, 0, 262, 0, 294, 0, 294, 0, 196, 0, 196, 0, 220, 0, 247, 0]
+    },
+    red: {
+      lead: [659, 784, 880, 784, 698, 659, 784, 659, 587, 659, 698, 784, 698, 659, 587, 523],
+      bass: [220, 0, 220, 0, 247, 0, 247, 0, 196, 0, 196, 0, 220, 0, 247, 0]
+    },
+    orange: {
+      lead: [587, 659, 698, 784, 698, 659, 587, 523, 587, 659, 698, 784, 880, 784, 698, 659],
+      bass: [196, 0, 196, 0, 220, 0, 220, 0, 174, 0, 174, 0, 196, 0, 220, 0]
+    },
+    yellow: {
+      lead: [698, 784, 880, 988, 880, 784, 698, 659, 698, 784, 880, 784, 698, 659, 587, 523],
+      bass: [233, 0, 233, 0, 262, 0, 262, 0, 196, 0, 196, 0, 220, 0, 233, 0]
+    },
+    green: {
+      lead: [523, 587, 659, 698, 659, 587, 523, 494, 523, 587, 659, 587, 523, 494, 440, 494],
+      bass: [175, 0, 175, 0, 196, 0, 196, 0, 147, 0, 147, 0, 165, 0, 175, 0]
+    },
+    blue: {
+      lead: [784, 880, 988, 1047, 988, 880, 784, 698, 784, 880, 988, 880, 784, 698, 659, 587],
+      bass: [262, 0, 262, 0, 294, 0, 294, 0, 220, 0, 220, 0, 247, 0, 262, 0]
+    },
+    indigo: {
+      lead: [659, 698, 784, 880, 784, 698, 659, 587, 659, 784, 988, 880, 784, 698, 659, 587],
+      bass: [208, 0, 208, 0, 233, 0, 233, 0, 175, 0, 175, 0, 196, 0, 208, 0]
+    },
+    violet: {
+      lead: [698, 880, 1047, 880, 784, 698, 784, 659, 698, 880, 988, 880, 784, 698, 659, 587],
+      bass: [233, 0, 233, 0, 262, 0, 262, 0, 208, 0, 208, 0, 220, 0, 233, 0]
+    },
+    boss: {
+      lead: [330, 370, 392, 440, 392, 370, 330, 294, 330, 392, 440, 392, 370, 330, 294, 262],
+      bass: [131, 0, 131, 0, 147, 0, 147, 0, 123, 0, 123, 0, 131, 0, 147, 0]
+    }
+  };
+
+  function getSongName() {
+    if (state === "title" || state === "select" || state === "victory") return "title";
+    if (state === "playing" || state === "levelcomplete" || state === "gameover") {
+      if (level && level.boss && level.boss.alive && player && player.x > 4200) return "boss";
+      return ["red", "orange", "yellow", "green", "blue", "indigo", "violet"][currentLevel] || "title";
+    }
+    return "title";
+  }
+
+  function updateMusic(dt) {
+    const theme = getSongName();
+    if (theme !== lastMusicTheme) {
+      musicTimer = 0;
+      musicStep = 0;
+      lastMusicTheme = theme;
+    }
+    if (!musicOn) return;
+    initAudio();
+    if (!audioCtx) return;
+    musicTimer += dt;
+    const stepLength = theme === "boss" ? 150 : 175;
+    while (musicTimer >= stepLength) {
+      musicTimer -= stepLength;
+      const song = songs[theme] || songs.title;
+      const i = musicStep % song.lead.length;
+      const lf = song.lead[i];
+      const bf = song.bass[i];
+      if (lf) tone(lf, theme === "boss" ? 0.1 : 0.125, "music", 0.013, 0);
+      if (bf) tone(bf, theme === "boss" ? 0.14 : 0.17, "triangle", 0.010, 0);
+      musicStep++;
+    }
+  }
+
+  function updateButtonLabels() {
+    soundBtn.textContent = `SFX: ${soundOn ? "On" : "Off"}`;
+    musicBtn.textContent = `Music: ${musicOn ? "On" : "Off"}`;
+    fsBtn.textContent = document.fullscreenElement ? "Exit Full Screen" : "Full Screen";
+  }
+
+  function toggleSound() {
+    soundOn = !soundOn;
+    updateButtonLabels();
+    if (soundOn) playSfx(660, 0.06, "triangle", 0.025);
+  }
+
+  function toggleMusic() {
+    musicOn = !musicOn;
+    updateButtonLabels();
+    if (musicOn) {
+      initAudio();
+      playSfx(784, 0.05, "triangle", 0.02);
+    }
+  }
+
+  function isStandaloneDisplay() {
+    return window.matchMedia?.("(display-mode: fullscreen)").matches ||
+      window.matchMedia?.("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true;
+  }
+
+  function requestPreferredFullscreen() {
+    if (document.fullscreenElement || isStandaloneDisplay()) return;
+    const request = wrap.requestFullscreen || wrap.webkitRequestFullscreen;
+    if (!request) return;
+    try {
+      const result = request.call(wrap);
+      if (result && typeof result.catch === "function") result.catch(() => {});
+    } catch (_) {}
+  }
+
+  async function toggleFullscreen() {
+    try {
+      if (!document.fullscreenElement) {
+        const request = wrap.requestFullscreen || wrap.webkitRequestFullscreen;
+        if (request) await request.call(wrap);
+      } else {
+        const exit = document.exitFullscreen || document.webkitExitFullscreen;
+        if (exit) await exit.call(document);
+      }
+    } catch (_) {}
+    updateButtonLabels();
+    canvas.focus();
+  }
+
+  function makeLevel(index) {
+    const f = fairies[index];
+    const grounds = [
+      { x: 0, y: GROUND_Y, w: 920, h: 160 },
+      { x: 1050, y: GROUND_Y, w: 840, h: 160 },
+      { x: 2000, y: GROUND_Y, w: 820, h: 160 },
+      { x: 2940, y: GROUND_Y, w: 760, h: 160 },
+      { x: 3800, y: GROUND_Y, w: 1800, h: 160 }
+    ];
+
+    const lift = [0, 10, 25, 8, 16, 28, 12][index];
+    const platforms = [
+      ...grounds,
+      { x: 330, y: 485 - lift, w: 210, h: 24 },
+      { x: 630, y: 420 + lift * 0.2, w: 175, h: 24 },
+      { x: 1100, y: 500 - lift * 0.15, w: 190, h: 24 },
+      { x: 1390, y: 430 - lift * 0.15, w: 180, h: 24 },
+      { x: 1670, y: 500, w: 160, h: 24 },
+      { x: 2050, y: 470 - lift * 0.25, w: 180, h: 24 },
+      { x: 2330, y: 395 + lift * 0.15, w: 225, h: 24 },
+      { x: 2620, y: 500, w: 150, h: 24 },
+      { x: 3000, y: 480 - lift * 0.2, w: 180, h: 24 },
+      { x: 3270, y: 405 + lift * 0.1, w: 205, h: 24 },
+      { x: 3550, y: 500, w: 120, h: 24 },
+      { x: 3920, y: 470, w: 190, h: 24 },
+      { x: 4210, y: 395, w: 180, h: 24 },
+      { x: 4800, y: 455, w: 220, h: 24 }
+    ];
+
+    const enemyXs = [520, 760, 1180, 1500, 1750, 2130, 2440, 3040, 3360, 3930, 4250];
+    const enemies = enemyXs.map((x, i) => {
+      const p = findGroundPlatformAt(platforms, x, GROUND_Y + 10);
+      return {
+        x,
+        y: p.y - 48,
+        w: 44,
+        h: 48,
+        vx: (i % 2 ? -1 : 1) * (1.1 + index * 0.06),
+        left: x - 85,
+        right: x + 85,
+        alive: true,
+        bob: i * 0.8,
+        blink: i * 11,
+        mood: i % 2 === 0 ? "grumpy" : "sneaky"
+      };
+    });
+
+    const gemXs = [250, 420, 695, 1135, 1445, 1740, 2100, 2385, 2670, 3040, 3330, 3570, 3960, 4245, 4520, 4870, 5230];
+    const gems = gemXs.map((x, i) => ({
+      x,
+      y: i % 3 === 0 ? 395 : (i % 3 === 1 ? 505 : 455),
+      collected: false,
+      phase: i * 0.55,
+      color: fairies[(index + i) % fairies.length].color
+    }));
+
+    const movingPlatforms = [
+      { x: 925, y: 468, baseX: 925, baseY: 468, w: 138, h: 22, ampX: 72, ampY: 12, speed: 0.012 + index * 0.0006, phase: 0.3, dx: 0, dy: 0, style: index % 2 === 0 ? "cloud" : "leaf" },
+      { x: 1888, y: 404, baseX: 1888, baseY: 404, w: 132, h: 22, ampX: 80, ampY: 18, speed: 0.0105 + index * 0.0005, phase: 1.4, dx: 0, dy: 0, style: index % 3 === 0 ? "flower" : "cloud" },
+      { x: 3725, y: 430, baseX: 3725, baseY: 430, w: 145, h: 22, ampX: 90, ampY: 10, speed: 0.011 + index * 0.0004, phase: 2.2, dx: 0, dy: 0, style: index >= 4 ? "star" : "leaf" }
+    ];
+
+    const springs = [
+      { x: 565, y: GROUND_Y - 16, w: 44, h: 16, boost: index % 2 === 0 ? 21.0 : 25.0, style: index % 2 === 0 ? "flower" : "mushroom", pulse: 0 },
+      { x: 2265, y: GROUND_Y - 16, w: 44, h: 16, boost: index >= 3 ? 21.5 : 25.5, style: index >= 3 ? "flower" : "mushroom", pulse: 0 },
+      { x: 4075, y: GROUND_Y - 16, w: 44, h: 16, boost: 22.5, style: index >= 5 ? "star" : "flower", pulse: 0 }
+    ];
+
+    const ladders = [
+      { id: 0, x: 452, topY: platforms[5].y + 1, bottomY: GROUND_Y, w: 34, platformLeft: platforms[5].x + 8, platformRight: platforms[5].x + platforms[5].w - 52 },
+      { id: 1, x: 1460, topY: platforms[8].y + 1, bottomY: GROUND_Y, w: 34, platformLeft: platforms[8].x + 8, platformRight: platforms[8].x + platforms[8].w - 52 },
+      { id: 2, x: 2415, topY: platforms[11].y + 1, bottomY: GROUND_Y, w: 34, platformLeft: platforms[11].x + 8, platformRight: platforms[11].x + platforms[11].w - 52 },
+      { id: 3, x: 3350, topY: platforms[14].y + 1, bottomY: GROUND_Y, w: 34, platformLeft: platforms[14].x + 8, platformRight: platforms[14].x + platforms[14].w - 52 },
+      { id: 4, x: 4280, topY: platforms[17].y + 1, bottomY: GROUND_Y, w: 34, platformLeft: platforms[17].x + 8, platformRight: platforms[17].x + platforms[17].w - 52 }
+    ];
+
+    const bonusStarSpots = [
+      { x: 735, y: platforms[6].y - 44 },
+      { x: 1510, y: platforms[8].y - 46 },
+      { x: 2475, y: platforms[11].y - 48 },
+      { x: 3400, y: platforms[14].y - 48 },
+      { x: 4325, y: platforms[17].y - 48 }
+    ];
+    const starSpot = bonusStarSpots[(index + 2) % bonusStarSpots.length];
+    const bonusStar = { x: starSpot.x, y: starSpot.y, collected: false, phase: index * 0.8 };
+
+    const ladderEnemyMap = [0, 3, 6, 8, 10];
+    ladderEnemyMap.forEach((enemyIndex, ladderIndex) => {
+      const e = enemies[enemyIndex];
+      const lad = ladders[ladderIndex];
+      if (!e || !lad) return;
+      e.ladderId = ladderIndex;
+      e.mode = "ground";
+      e.climbDir = -1;
+      e.climbCooldown = 70 + ladderIndex * 25;
+      e.baseLeft = lad.x - 72;
+      e.baseRight = lad.x + 72;
+      e.left = e.baseLeft;
+      e.right = e.baseRight;
+    });
+
+    return {
+      index,
+      fairy: f,
+      platforms,
+      movingPlatforms,
+      springs,
+      ladders,
+      bonusStar,
+      ladderTipShown: false,
+      enemies,
+      gems,
+      projectiles: [],
+      boss: {
+        x: 4540,
+        y: GROUND_Y - 114,
+        w: 90,
+        h: 114,
+        vx: 1.85 + index * 0.1,
+        vy: 0,
+        hp: 3,
+        maxHp: 3,
+        alive: true,
+        onGround: true,
+        arenaLeft: 4360,
+        arenaRight: 4900,
+        attackTimer: 80,
+        jumpTimer: 125,
+        dashTimer: 180,
+        icicleTimer: 220,
+        invuln: 0,
+        facing: -1,
+        dashActive: false,
+        dashDir: -1,
+        phase: 1,
+        scaredTimer: 0
+      },
+      fairyFound: false,
+      bossIntroduced: false,
+      checkpoint: 120
+    };
+  }
+
+  function findGroundPlatformAt(platforms, x, fallbackY) {
+    let best = { y: fallbackY };
+    for (const p of platforms) {
+      if (x >= p.x && x <= p.x + p.w && p.y <= fallbackY && p.y > best.y - 300) {
+        if (p.h > 40 || p.y > best.y) best = p;
+      }
+    }
+    return best;
+  }
+
+  function createPlayer() {
+    return {
+      x: 120,
+      y: GROUND_Y - 76,
+      w: 46,
+      h: 76,
+      vx: 0,
+      vy: 0,
+      onGround: false,
+      coyote: 0,
+      jumpBuffer: 0,
+      facing: 1,
+      hearts: 5,
+      maxHearts: 5,
+      invuln: 0,
+      prevY: GROUND_Y - 76,
+      runPhase: 0,
+      blink: 0,
+      climbing: false,
+      ladderId: null,
+      landSquash: 0,
+      launchStretch: 0,
+      wasOnGround: false,
+      platformCarryVx: 0,
+      platformCarryVy: 0
+    };
+  }
+
+  function startLevel(index) {
+    currentLevel = index;
+    level = makeLevel(index);
+    player = createPlayer();
+    activeIcicles = [];
+    comicBursts = [];
+    cameraX = 0;
+    paused = false;
+    state = "playing";
+    message = `Find ${fairies[index].name}!`;
+    messageTimer = 170;
+    initAudio();
+    playSfx(523, 0.08, "triangle", 0.03);
+    setTimeout(() => playSfx(659, 0.09, "triangle", 0.03), 70);
+  }
+
+  function respawnPlayer() {
+    player.x = level.checkpoint;
+    player.y = GROUND_Y - player.h - 4;
+    player.vx = 0;
+    player.vy = 0;
+    player.invuln = 120;
+    cameraX = clamp(player.x - W * 0.35, 0, LEVEL_WIDTH - W);
+  }
+
+  function damagePlayer(fromX) {
+    if (player.invuln > 0 || state !== "playing") return;
+    player.hearts--;
+    player.invuln = 108;
+    player.vy = -8.5;
+    player.vx = player.x < fromX ? -6.8 : 6.8;
+    screenShake = 15;
+    playSfx(150, 0.18, "sawtooth", 0.045, -60);
+    if (player.hearts <= 0) {
+      state = "gameover";
+      playSfx(180, 0.28, "square", 0.035, -90);
+    }
+  }
+
+  function banishEnemy(enemy) {
+    enemy.alive = false;
+    player.vy = -10.7;
+    score += 100;
+    screenShake = 5;
+    playSfx(560, 0.07, "square", 0.022, 180);
+    goblinFart();
+    const funnyWords = ["PFFT!", "PARP!", "POOT!"];
+    comicBursts.push({
+      x: enemy.x + enemy.w / 2,
+      y: enemy.y - 8,
+      text: funnyWords[Math.floor(Math.random() * funnyWords.length)],
+      life: 62,
+      vy: -0.8
+    });
+  }
+
+  function hitBoss() {
+    const b = level.boss;
+    if (!b.alive || b.invuln > 0) return;
+    b.hp--;
+    b.invuln = 52;
+    b.phase = b.hp <= 2 ? 2 : 1;
+    b.scaredTimer = 45;
+    player.vy = -12.2;
+    player.vx = player.x < b.x ? -4.3 : 4.3;
+    screenShake = 18;
+    score += 500;
+    playSfx(260, 0.09, "square", 0.04, 220);
+    if (b.hp <= 0) {
+      b.alive = false;
+      level.projectiles.length = 0;
+      activeIcicles.length = 0;
+      score += 1800;
+      message = `${level.fairy.short} is free!`;
+      messageTimer = 220;
+      setTimeout(shoutWooHoo, 110);
+      jingle();
+    }
+  }
+
+  function getInput() {
+    let left = keys.has("ArrowLeft") || keys.has("KeyA") || touchInput.left;
+    let right = keys.has("ArrowRight") || keys.has("KeyD") || touchInput.right;
+    let up = keys.has("ArrowUp") || keys.has("KeyW") || touchInput.up;
+    let down = keys.has("ArrowDown") || keys.has("KeyS") || touchInput.down;
+    let jumpHeld = keys.has("Space") || keys.has("KeyZ") || touchInput.jump;
+    let padJump = false;
+    let padStart = false;
+    let padConfirm = false;
+    let padLeft = false;
+    let padRight = false;
+    let padUp = false;
+    let padDown = false;
+    let padFs = false;
+
+    const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+    const gp = Array.from(pads || []).find(Boolean);
+    if (gp) {
+      gamepadName = gp.id || "Gamepad";
+      padStatus.innerHTML = `<strong>Controller</strong> - ${gamepadName.slice(0, 34)} | Jump with B`;
+      const ax = Math.abs(gp.axes[0] || 0) > 0.18 ? gp.axes[0] : 0;
+      const ay = Math.abs(gp.axes[1] || 0) > 0.18 ? gp.axes[1] : 0;
+      padLeft = ax < -0.25 || !!gp.buttons[14]?.pressed;
+      padRight = ax > 0.25 || !!gp.buttons[15]?.pressed;
+      padUp = ay < -0.30 || !!gp.buttons[12]?.pressed;
+      padDown = ay > 0.30 || !!gp.buttons[13]?.pressed;
+      padJump = !!gp.buttons[0]?.pressed || !!gp.buttons[1]?.pressed;
+      padConfirm = !!gp.buttons[0]?.pressed || !!gp.buttons[1]?.pressed;
+      padStart = !!gp.buttons[9]?.pressed;
+      padFs = !!gp.buttons[8]?.pressed;
+      left ||= padLeft;
+      right ||= padRight;
+      up ||= padUp;
+      down ||= padDown;
+      jumpHeld ||= padJump;
+    }
+
+    const touchJumpPressed = touchInput.jump && !previousTouch.jump;
+    const touchPausePressed = touchInput.pause && !previousTouch.pause;
+    const touchLeftPressed = touchInput.left && !previousTouch.left;
+    const touchRightPressed = touchInput.right && !previousTouch.right;
+    const jumpPressed = (keysPressed.has("Space") || keysPressed.has("KeyZ")) || (padJump && !previousPad.jump) || touchJumpPressed;
+    const confirmPressed = keysPressed.has("Enter") || (padConfirm && !previousPad.confirm) || touchJumpPressed;
+    const startPressed = keysPressed.has("KeyP") || (padStart && !previousPad.start) || touchPausePressed;
+    const menuLeftPressed = keysPressed.has("ArrowLeft") || keysPressed.has("KeyA") || (padLeft && !previousPad.left) || touchLeftPressed;
+    const menuRightPressed = keysPressed.has("ArrowRight") || keysPressed.has("KeyD") || (padRight && !previousPad.right) || touchRightPressed;
+    const fullscreenPressed = keysPressed.has("KeyF") || (padFs && !previousPad.fullscreen);
+
+    previousPad = { jump: padJump, start: padStart, left: padLeft, right: padRight, confirm: padConfirm, fullscreen: padFs };
+    previousTouch = { left: touchInput.left, right: touchInput.right, jump: touchInput.jump, pause: touchInput.pause };
+    return { left, right, up, down, jumpHeld, jumpPressed, confirmPressed, startPressed, menuLeftPressed, menuRightPressed, fullscreenPressed };
+  }
+
+
+
+  function resetTouchStick() {
+    touchInput.left = false;
+    touchInput.right = false;
+    touchInput.up = false;
+    touchInput.down = false;
+    if (!touchStick) return;
+    touchStick.classList.remove("tracking");
+    touchStick.style.setProperty("--stick-x", "0px");
+    touchStick.style.setProperty("--stick-y", "0px");
+    touchStick.querySelectorAll(".touchDir").forEach(el => el.classList.remove("active"));
+  }
+
+  function updateTouchStick(clientX, clientY) {
+    if (!touchStick) return;
+    const r = touchStick.getBoundingClientRect();
+    const cx = r.left + r.width / 2;
+    const cy = r.top + r.height / 2;
+    const rawX = clientX - cx;
+    const rawY = clientY - cy;
+    const radius = Math.max(1, Math.min(r.width, r.height) / 2);
+    const nx = rawX / radius;
+    const ny = rawY / radius;
+    const magnitude = Math.hypot(nx, ny);
+    const maxKnob = Math.min(r.width, r.height) * 0.28;
+    const rawMagnitude = Math.hypot(rawX, rawY);
+    const knobScale = rawMagnitude > 0 ? Math.min(1, maxKnob / rawMagnitude) : 0;
+    touchStick.style.setProperty("--stick-x", `${(rawX * knobScale).toFixed(1)}px`);
+    touchStick.style.setProperty("--stick-y", `${(rawY * knobScale).toFixed(1)}px`);
+
+    if (magnitude < TOUCH_DEAD_ZONE) {
+      touchInput.left = touchInput.right = touchInput.up = touchInput.down = false;
+    } else {
+      touchInput.left = nx < -TOUCH_AXIS_THRESHOLD;
+      touchInput.right = nx > TOUCH_AXIS_THRESHOLD;
+      touchInput.up = ny < -TOUCH_AXIS_THRESHOLD;
+      touchInput.down = ny > TOUCH_AXIS_THRESHOLD;
+    }
+    touchStick.querySelectorAll(".touchDir").forEach(el => {
+      el.classList.toggle("active", !!touchInput[el.dataset.dir]);
+    });
+  }
+
+  if (touchStick) {
+    touchStick.addEventListener("pointerdown", (e) => {
+      if (!touchCapable && e.pointerType === "mouse") return;
+      e.preventDefault();
+      initAudio();
+      requestPreferredFullscreen();
+      touchStickPointer = e.pointerId;
+      touchStick.classList.add("tracking");
+      try { touchStick.setPointerCapture(e.pointerId); } catch (_) {}
+      updateTouchStick(e.clientX, e.clientY);
+    });
+    touchStick.addEventListener("pointermove", (e) => {
+      if (e.pointerId !== touchStickPointer) return;
+      e.preventDefault();
+      updateTouchStick(e.clientX, e.clientY);
+    });
+    const endTouchStick = (e) => {
+      if (e.pointerId !== touchStickPointer) return;
+      e.preventDefault();
+      touchStickPointer = null;
+      resetTouchStick();
+    };
+    touchStick.addEventListener("pointerup", endTouchStick);
+    touchStick.addEventListener("pointercancel", endTouchStick);
+    touchStick.addEventListener("lostpointercapture", () => {
+      touchStickPointer = null;
+      resetTouchStick();
+    });
+  }
+
+  function bindTouchButton(button, key) {
+    if (!button) return;
+    let pointerId = null;
+    button.addEventListener("pointerdown", (e) => {
+      if (!touchCapable && e.pointerType === "mouse") return;
+      e.preventDefault();
+      initAudio();
+      requestPreferredFullscreen();
+      pointerId = e.pointerId;
+      touchInput[key] = true;
+      button.classList.add("pressed");
+      try { button.setPointerCapture(e.pointerId); } catch (_) {}
+      canvas.focus();
+    });
+    const release = (e) => {
+      if (pointerId !== null && e && e.pointerId !== pointerId) return;
+      pointerId = null;
+      touchInput[key] = false;
+      button.classList.remove("pressed");
+    };
+    button.addEventListener("pointerup", release);
+    button.addEventListener("pointercancel", release);
+    button.addEventListener("lostpointercapture", release);
+  }
+
+  bindTouchButton(touchJumpBtn, "jump");
+  bindTouchButton(touchPauseBtn, "pause");
+
+
+  addEventListener("keydown", (e) => {
+    if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"].includes(e.code)) e.preventDefault();
+    if (!keys.has(e.code)) keysPressed.add(e.code);
+    keys.add(e.code);
+    initAudio();
+    if (e.code === "KeyM") toggleSound();
+    if (e.code === "KeyN") toggleMusic();
+  });
+  addEventListener("keyup", (e) => keys.delete(e.code));
+  addEventListener("gamepadconnected", (e) => {
+    gamepadName = e.gamepad.id || "Gamepad";
+    padStatus.innerHTML = `<strong>Controller</strong> - ${gamepadName.slice(0, 34)} | Jump with B`;
+  });
+  addEventListener("gamepaddisconnected", () => {
+    gamepadName = "";
+    padStatus.innerHTML = "<strong>Controller</strong> - press a button to connect your 8BitDo SN30 Pro - jump with B";
+  });
+  document.addEventListener("fullscreenchange", updateButtonLabels);
+
+  soundBtn.addEventListener("click", () => { initAudio(); toggleSound(); });
+  musicBtn.addEventListener("click", () => { initAudio(); toggleMusic(); });
+  fsBtn.addEventListener("click", () => { initAudio(); toggleFullscreen(); });
+
+  canvas.addEventListener("pointerdown", (e) => {
+    initAudio();
+    if (touchCapable) requestPreferredFullscreen();
+    const r = canvas.getBoundingClientRect();
+    const x = (e.clientX - r.left) * W / r.width;
+    const y = (e.clientY - r.top) * H / r.height;
+    if (state === "title") {
+      state = "select";
+      playSfx(500, 0.05, "triangle", 0.025);
+    } else if (state === "select") {
+      if (x >= 215 && x <= 560 && y >= 210 && y <= 575) selectedCharacter = 0;
+      if (x >= 720 && x <= 1065 && y >= 210 && y <= 575) selectedCharacter = 1;
+      if (y >= 596 && y <= 674 && x >= 420 && x <= 860) startLevel(0);
+    } else if (state === "levelcomplete") {
+      if (currentLevel < fairies.length - 1) startLevel(currentLevel + 1);
+      else state = "victory";
+    } else if (state === "gameover") {
+      startLevel(currentLevel);
+    } else if (state === "victory") {
+      state = "title";
+      score = 0;
+      totalGems = 0;
+    }
+    canvas.focus();
+  });
+
+  function update(dt) {
+    frame++;
+    const input = getInput();
+    if (input.fullscreenPressed) toggleFullscreen();
+    updateMusic(dt);
+
+    if (state === "title") {
+      if (input.confirmPressed) state = "select";
+      keysPressed.clear();
+      return;
+    }
+
+    if (state === "select") {
+      if (input.menuLeftPressed) selectedCharacter = 0;
+      if (input.menuRightPressed) selectedCharacter = 1;
+      if (input.confirmPressed) startLevel(0);
+      keysPressed.clear();
+      return;
+    }
+
+    if (state === "gameover") {
+      if (input.confirmPressed) startLevel(currentLevel);
+      keysPressed.clear();
+      return;
+    }
+
+    if (state === "levelcomplete") {
+      if (input.confirmPressed) {
+        if (currentLevel < fairies.length - 1) startLevel(currentLevel + 1);
+        else state = "victory";
+      }
+      keysPressed.clear();
+      return;
+    }
+
+    if (state === "victory") {
+      if (input.confirmPressed) {
+        state = "title";
+        score = 0;
+        totalGems = 0;
+      }
+      keysPressed.clear();
+      return;
+    }
+
+    if (input.startPressed) paused = !paused;
+    if (paused) {
+      keysPressed.clear();
+      return;
+    }
+
+    updatePlaying(input, dt);
+    keysPressed.clear();
+  }
+
+  function ladderForEntity(entity) {
+    if (!level || !level.ladders) return null;
+    const cx = entity.x + entity.w / 2;
+    const bottom = entity.y + entity.h;
+    return level.ladders.find(l =>
+      cx >= l.x - 14 && cx <= l.x + l.w + 14 &&
+      bottom >= l.topY - 8 && entity.y <= l.bottomY + 8
+    ) || null;
+  }
+
+  function updateComicBursts(s) {
+    for (const b of comicBursts) {
+      b.y += b.vy * s;
+      b.vy -= 0.01 * s;
+      b.life -= s;
+    }
+    comicBursts = comicBursts.filter(b => b.life > 0);
+  }
+
+  function updateMovingPlatforms(s) {
+    for (const p of level.movingPlatforms) {
+      const oldX = p.x;
+      const oldY = p.y;
+      p.x = p.baseX + Math.sin(frame * p.speed + p.phase) * p.ampX;
+      p.y = p.baseY + Math.cos(frame * p.speed * 1.35 + p.phase) * p.ampY;
+      p.dx = p.x - oldX;
+      p.dy = p.y - oldY;
+    }
+  }
+
+  function updatePlaying(input, dt) {
+    if (!player || !level) return;
+    const speedScale = clamp(dt / 16.6667, 0.5, 1.7);
+    player.prevY = player.y;
+    player.wasOnGround = player.onGround;
+    player.blink += 0.06 * speedScale;
+    player.landSquash = Math.max(0, player.landSquash - 0.09 * speedScale);
+    player.launchStretch = Math.max(0, player.launchStretch - 0.075 * speedScale);
+    for (const sp of level.springs) sp.pulse = Math.max(0, (sp.pulse || 0) - 0.055 * speedScale);
+    updateMovingPlatforms(speedScale);
+    updateComicBursts(speedScale);
+    if (player.invuln > 0) player.invuln -= speedScale;
+    if (level.boss.invuln > 0) level.boss.invuln -= speedScale;
+    if (level.boss.scaredTimer > 0) level.boss.scaredTimer -= speedScale;
+    if (messageTimer > 0) messageTimer -= speedScale;
+    if (screenShake > 0) screenShake -= speedScale;
+
+    if (input.jumpPressed) player.jumpBuffer = 9;
+    else player.jumpBuffer = Math.max(0, player.jumpBuffer - speedScale);
+
+    if (player.onGround) player.coyote = 8;
+    else player.coyote = Math.max(0, player.coyote - speedScale);
+
+    const nearbyLadder = ladderForEntity(player);
+    if (!player.climbing && nearbyLadder && (input.up || input.down)) {
+      player.climbing = true;
+      player.ladderId = nearbyLadder.id;
+      player.vx = 0;
+      player.vy = 0;
+      player.onGround = false;
+      if (!level.ladderTipShown) {
+        level.ladderTipShown = true;
+        message = "Ladders! Use Up / Down. Watch out - goblins use them too!";
+        messageTimer = 210;
+      }
+    }
+
+    if (player.climbing) {
+      const ladder = level.ladders[player.ladderId];
+      if (!ladder) {
+        player.climbing = false;
+      } else {
+        const ladderCenterX = ladder.x + ladder.w / 2 - player.w / 2;
+        player.x = lerp(player.x, ladderCenterX, 0.28 * speedScale);
+        const climbDir = (input.down ? 1 : 0) - (input.up ? 1 : 0);
+        player.vy = climbDir * 4.0;
+        player.y += player.vy * speedScale;
+        player.runPhase += Math.abs(climbDir) * 0.13 * speedScale;
+        const topY = ladder.topY - player.h;
+        const bottomY = ladder.bottomY - player.h;
+        player.y = clamp(player.y, topY, bottomY);
+
+        if (input.jumpPressed) {
+          player.climbing = false;
+          player.ladderId = null;
+          player.vy = -11.5;
+          player.vx = player.facing * 3.0;
+          playSfx(450, 0.06, "square", 0.016, 70);
+        } else if (input.left || input.right) {
+          const dir = input.left ? -1 : 1;
+          player.facing = dir;
+          player.climbing = false;
+          player.ladderId = null;
+          player.vx = dir * 3.2;
+        } else if (player.y <= topY + 0.5 && input.up) {
+          player.climbing = false;
+          player.ladderId = null;
+          player.y = topY;
+          player.vy = 0;
+          player.onGround = true;
+        } else if (player.y >= bottomY - 0.5 && input.down) {
+          player.climbing = false;
+          player.ladderId = null;
+          player.y = bottomY;
+          player.vy = 0;
+          player.onGround = true;
+        }
+      }
+    }
+
+    if (!player.climbing) {
+      const targetVx = (input.left ? -1 : 0) + (input.right ? 1 : 0);
+      const maxSpeed = 7.25;
+      if (targetVx !== 0) {
+        const target = targetVx * maxSpeed;
+        const turning = Math.sign(target) !== Math.sign(player.vx) && Math.abs(player.vx) > 0.4;
+        const accel = (player.onGround ? 1.05 : 0.58) * (turning ? 1.35 : 1);
+        const delta = clamp(target - player.vx, -accel * speedScale, accel * speedScale);
+        player.vx += delta;
+        player.facing = targetVx;
+        player.runPhase += Math.abs(player.vx) * 0.052 * speedScale;
+      } else {
+        player.vx *= Math.pow(player.onGround ? 0.76 : 0.955, speedScale);
+        player.runPhase += 0.008 * speedScale;
+      }
+
+      if (player.jumpBuffer > 0 && player.coyote > 0) {
+        player.vy = -14.7;
+        player.vx += player.platformCarryVx * 0.9;
+        player.onGround = false;
+        player.coyote = 0;
+        player.jumpBuffer = 0;
+        playSfx(440, 0.07, "square", 0.018, 90);
+      }
+
+      if (!input.jumpHeld && player.vy < -6) player.vy += 0.55 * speedScale;
+      const nearApex = Math.abs(player.vy) < 2.4;
+      const gravity = nearApex ? 0.38 : 0.72;
+      player.vy += gravity * speedScale;
+      player.vy = Math.min(player.vy, 17);
+
+      player.x += player.vx * speedScale;
+      player.x = clamp(player.x, 0, LEVEL_WIDTH - player.w);
+      const oldBottom = player.prevY + player.h;
+      const preLandingVy = player.vy;
+      player.y += player.vy * speedScale;
+      player.onGround = false;
+      player.platformCarryVx = 0;
+      player.platformCarryVy = 0;
+
+      let landingY = Infinity;
+      let landedPlatform = null;
+      const allPlatforms = level.platforms.concat(level.movingPlatforms);
+      for (const p of allPlatforms) {
+        const horizontal = player.x + player.w > p.x + 4 && player.x < p.x + p.w - 4;
+        const newBottom = player.y + player.h;
+        if (horizontal && player.vy >= 0 && oldBottom <= p.y + 11 && newBottom >= p.y && player.y < p.y) {
+          if (p.y < landingY) {
+            landingY = p.y;
+            landedPlatform = p;
+          }
+        }
+      }
+      if (landingY < Infinity) {
+        player.y = landingY - player.h;
+        player.vy = 0;
+        player.onGround = true;
+        if (!player.wasOnGround && preLandingVy > 7) {
+          player.landSquash = Math.min(1, preLandingVy / 15);
+          playSfx(125, 0.035, "sine", 0.008);
+        }
+        if (landedPlatform && "dx" in landedPlatform) {
+          player.x += landedPlatform.dx;
+          player.y += landedPlatform.dy;
+          player.platformCarryVx = landedPlatform.dx / Math.max(0.5, speedScale);
+          player.platformCarryVy = landedPlatform.dy / Math.max(0.5, speedScale);
+        }
+      }
+
+      for (const sp of level.springs) {
+        const springRect = { x: sp.x, y: sp.y, w: sp.w, h: sp.h };
+        if (rectsOverlap(player, springRect) && player.vy >= 0 && (player.y + player.h) <= sp.y + sp.h + 12) {
+          player.y = sp.y - player.h;
+          player.vy = -sp.boost;
+          player.onGround = false;
+          player.landSquash = 1.0;
+          player.launchStretch = sp.style === "mushroom" ? 1.0 : 0.72;
+          sp.pulse = 1.0;
+          screenShake = Math.max(screenShake, sp.style === "mushroom" ? 9 : 5);
+          playSfx(sp.style === "mushroom" ? 190 : 620, 0.11, sp.style === "mushroom" ? "square" : "triangle", 0.03, sp.style === "mushroom" ? 310 : 140);
+          if (sp.style === "mushroom") {
+            setTimeout(() => playSfx(470, 0.10, "triangle", 0.022, 150), 45);
+          }
+        }
+      }
+    }
+
+    if (player.y > H + 120) {
+      damagePlayer(player.x);
+      if (player.hearts > 0) respawnPlayer();
+      return;
+    }
+
+    if (player.x > level.checkpoint + 850 && player.x < 4100) {
+      level.checkpoint = Math.floor(player.x / 850) * 850;
+    }
+
+    for (const g of level.gems) {
+      if (g.collected) continue;
+      const gy = g.y + Math.sin(frame * 0.06 + g.phase) * 8;
+      if (Math.abs((player.x + player.w / 2) - g.x) < 32 && Math.abs((player.y + player.h / 2) - gy) < 48) {
+        g.collected = true;
+        score += 50;
+        totalGems++;
+        playSfx(820, 0.055, "triangle", 0.02, 160);
+      }
+    }
+
+    if (!level.bonusStar.collected) {
+      const sy = level.bonusStar.y + Math.sin(frame * 0.07 + level.bonusStar.phase) * 8;
+      if (Math.abs((player.x + player.w / 2) - level.bonusStar.x) < 34 && Math.abs((player.y + player.h / 2) - sy) < 44) {
+        level.bonusStar.collected = true;
+        score += 500;
+        if (player.hearts < player.maxHearts) player.hearts++;
+        message = player.hearts < player.maxHearts ? "Secret rainbow star!" : "Secret rainbow star - bonus magic!";
+        messageTimer = 120;
+        jingle();
+      }
+    }
+
+    for (const e of level.enemies) {
+      if (!e.alive) continue;
+      e.blink += 0.06 * speedScale;
+      e.bob += 0.05 * speedScale;
+      if (e.climbCooldown !== undefined) e.climbCooldown -= speedScale;
+
+      if (e.ladderId !== undefined) {
+        const ladder = level.ladders[e.ladderId];
+        const ladderX = ladder.x + ladder.w / 2 - e.w / 2;
+        if (e.mode === "climb") {
+          e.x = lerp(e.x, ladderX, 0.24 * speedScale);
+          e.y += e.climbDir * (1.55 + currentLevel * 0.04) * speedScale;
+          e.vx = 0;
+          if (e.climbDir < 0 && e.y <= ladder.topY - e.h) {
+            e.y = ladder.topY - e.h;
+            e.mode = "platform";
+            e.left = ladder.platformLeft;
+            e.right = ladder.platformRight;
+            e.vx = (e.ladderId % 2 ? -1 : 1) * (1.05 + currentLevel * 0.04);
+            e.climbCooldown = 120;
+          } else if (e.climbDir > 0 && e.y >= ladder.bottomY - e.h) {
+            e.y = ladder.bottomY - e.h;
+            e.mode = "ground";
+            e.left = e.baseLeft;
+            e.right = e.baseRight;
+            e.vx = (e.ladderId % 2 ? 1 : -1) * (1.08 + currentLevel * 0.04);
+            e.climbCooldown = 110;
+          }
+        } else {
+          e.x += e.vx * speedScale;
+          if (e.x < e.left || e.x > e.right) {
+            e.x = clamp(e.x, e.left, e.right);
+            e.vx *= -1;
+          }
+          const goblinCenter = e.x + e.w / 2;
+          const ladderCenter = ladder.x + ladder.w / 2;
+          if (e.climbCooldown <= 0 && Math.abs(goblinCenter - ladderCenter) < 14) {
+            e.mode = "climb";
+            e.climbDir = e.modeBefore === "platform" || e.y < GROUND_Y - e.h - 30 ? 1 : -1;
+            if (e.y <= ladder.topY - e.h + 8) e.climbDir = 1;
+            if (e.y >= ladder.bottomY - e.h - 8) e.climbDir = -1;
+            e.climbCooldown = 150;
+          }
+          e.modeBefore = e.mode;
+        }
+      } else {
+        e.x += e.vx * speedScale;
+        if (e.x < e.left || e.x > e.right) e.vx *= -1;
+      }
+
+      if (rectsOverlap(player, e)) {
+        const prevBottom = player.prevY + player.h;
+        if (!player.climbing && player.vy > 0 && prevBottom <= e.y + 14) banishEnemy(e);
+        else damagePlayer(e.x + e.w / 2);
+      }
+    }
+
+    updateBoss(speedScale);
+    updateProjectiles(speedScale);
+    updateIcicles(speedScale);
+
+    if (level.boss.alive && rectsOverlap(player, level.boss)) {
+      const prevBottom = player.prevY + player.h;
+      if (!player.climbing && player.vy > 0 && prevBottom <= level.boss.y + 18) hitBoss();
+      else damagePlayer(level.boss.x + level.boss.w / 2);
+    }
+
+    if (!level.boss.alive) {
+      const fairyRect = { x: 5200, y: 438 + Math.sin(frame * 0.045) * 12, w: 58, h: 88 };
+      if (rectsOverlap(player, fairyRect)) {
+        level.fairyFound = true;
+        state = "levelcomplete";
+        score += 1000;
+        jingle();
+      }
+    }
+
+    if (!level.bossIntroduced && player.x > 4200) {
+      level.bossIntroduced = true;
+      message = "Jack Frost blocks the way! Jump on him 3 times!";
+      messageTimer = 230;
+      playSfx(160, 0.20, "sawtooth", 0.03, 60);
+    }
+
+    const targetCam = clamp(player.x - W * 0.36, 0, LEVEL_WIDTH - W);
+    cameraX = lerp(cameraX, targetCam, 0.09 * speedScale);
+  }
+
+  function updateBoss(s) {
+    const b = level.boss;
+    if (!b.alive) return;
+    if (player.x < 4100) return;
+
+    b.facing = player.x < b.x ? -1 : 1;
+    b.phase = b.hp <= 2 ? 2 : 1;
+    b.attackTimer -= s;
+    b.jumpTimer -= s;
+    b.dashTimer -= s;
+    b.icicleTimer -= s;
+
+    if (b.dashActive) {
+      b.x += b.dashDir * (7.2 + currentLevel * 0.15) * s;
+      if (b.x < b.arenaLeft || b.x + b.w > b.arenaRight) {
+        b.dashActive = false;
+        b.x = clamp(b.x, b.arenaLeft, b.arenaRight - b.w);
+        b.vx *= -1;
+      }
+    } else if (b.onGround) {
+      b.x += b.vx * s;
+      if (b.x < b.arenaLeft || b.x + b.w > b.arenaRight) b.vx *= -1;
+      if (b.jumpTimer <= 0) {
+        b.vy = -11.7;
+        b.onGround = false;
+        b.jumpTimer = 120 + currentLevel * 4;
+      }
+      if (b.phase === 2 && b.dashTimer <= 0) {
+        b.dashActive = true;
+        b.dashDir = player.x < b.x ? -1 : 1;
+        b.dashTimer = 190;
+        screenShake = Math.max(screenShake, 7);
+        playSfx(220, 0.08, "sawtooth", 0.025, 90);
+      }
+    }
+
+    if (!b.onGround) {
+      b.vy += 0.55 * s;
+      b.y += b.vy * s;
+      b.x += b.vx * 0.75 * s;
+      if (b.y + b.h >= GROUND_Y) {
+        b.y = GROUND_Y - b.h;
+        b.vy = 0;
+        b.onGround = true;
+      }
+      if (b.x < b.arenaLeft || b.x + b.w > b.arenaRight) b.vx *= -1;
+    }
+
+    if (b.attackTimer <= 0) {
+      const dir = player.x < b.x ? -1 : 1;
+      level.projectiles.push({
+        x: b.x + b.w / 2,
+        y: b.y + 34,
+        w: 24,
+        h: 24,
+        vx: dir * (5.2 + currentLevel * 0.15),
+        vy: -2.8,
+        life: 220,
+        spin: Math.random() * Math.PI * 2
+      });
+      if (b.phase === 2) {
+        level.projectiles.push({
+          x: b.x + b.w / 2,
+          y: b.y + 24,
+          w: 20,
+          h: 20,
+          vx: dir * (4.0 + currentLevel * 0.1),
+          vy: -5.2,
+          life: 220,
+          spin: Math.random() * Math.PI * 2
+        });
+      }
+      b.attackTimer = Math.max(48, (b.phase === 2 ? 75 : 95) - currentLevel * 4);
+      playSfx(240, 0.055, "sine", 0.02, -50);
+    }
+
+    if (b.phase === 2 && b.icicleTimer <= 0) {
+      const count = 3 + (currentLevel > 3 ? 1 : 0);
+      for (let i = 0; i < count; i++) {
+        const tx = clamp(player.x - 70 + i * 70 + (Math.random() * 50 - 25), b.arenaLeft + 20, b.arenaRight - 20);
+        activeIcicles.push({ x: tx, y: -40 - i * 24, w: 18, h: 38, vy: 4.5 + i * 0.25, warn: 60, life: 300 });
+      }
+      b.icicleTimer = 200;
+      playSfx(310, 0.07, "triangle", 0.018, -80);
+    }
+  }
+
+  function updateProjectiles(s) {
+    for (const p of level.projectiles) {
+      p.x += p.vx * s;
+      p.vy += 0.13 * s;
+      p.y += p.vy * s;
+      p.life -= s;
+      p.spin += 0.2 * s;
+      if (p.life > 0 && rectsOverlap(player, p)) {
+        p.life = 0;
+        damagePlayer(p.x);
+      }
+    }
+    level.projectiles = level.projectiles.filter(p => p.life > 0 && p.y < H + 100 && p.x > 3820 && p.x < 5350);
+  }
+
+  function updateIcicles(s) {
+    for (const ic of activeIcicles) {
+      if (ic.warn > 0) {
+        ic.warn -= s;
+      } else {
+        ic.y += ic.vy * s;
+        ic.vy += 0.08 * s;
+        if (ic.life > 0) ic.life -= s;
+        if (rectsOverlap(player, ic)) {
+          ic.life = 0;
+          damagePlayer(ic.x);
+        }
+      }
+    }
+    activeIcicles = activeIcicles.filter(ic => ic.life > 0 && ic.y < H + 80);
+  }
+
+  function draw() {
+    ctx.save();
+    if (screenShake > 0 && state === "playing") {
+      ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake * 0.55);
+    }
+
+    if (state === "title") drawTitle();
+    else if (state === "select") drawCharacterSelect();
+    else if (["playing", "levelcomplete", "gameover"].includes(state)) {
+      drawWorld();
+      drawHUD();
+      if (paused) drawPause();
+      if (state === "levelcomplete") drawLevelComplete();
+      if (state === "gameover") drawGameOver();
+    } else if (state === "victory") drawVictory();
+
+    ctx.restore();
+  }
+
+  function roundedRectPath(x, y, w, h, r) {
+    const rr = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+  }
+
+  function roundedRect(x, y, w, h, r, fill, stroke = null, lineWidth = 2) {
+    roundedRectPath(x, y, w, h, r);
+    if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+    if (stroke) { ctx.lineWidth = lineWidth; ctx.strokeStyle = stroke; ctx.stroke(); }
+  }
+
+  function drawTitle() {
+    const grd = ctx.createLinearGradient(0, 0, 0, H);
+    grd.addColorStop(0, "#88e1ff");
+    grd.addColorStop(0.55, "#d4f4ff");
+    grd.addColorStop(1, "#ffe9fb");
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, W, H);
+
+    drawRainbow(640, 410, 470, 46);
+    drawCloud(120, 138, 1.45);
+    drawCloud(1095, 170, 1.18);
+    drawCloud(905, 344, 0.78);
+    drawSparkles(0, 0, W, H, 38, 1);
+
+    for (let i = 0; i < 6; i++) {
+      drawSmallButterfly(170 + i * 160, 130 + Math.sin(frame * 0.03 + i) * 18, i % fairies.length);
+    }
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#4d2e7c";
+    ctx.font = "900 70px system-ui";
+    ctx.fillText("Rainbow Magic", W / 2, 148);
+    ctx.font = "900 80px system-ui";
+    ctx.fillStyle = "#ff529d";
+    ctx.fillText("Fairy Hunt", W / 2, 230);
+
+    ctx.font = "800 22px system-ui";
+    ctx.fillStyle = "#59486f";
+    ctx.fillText("A cute platform adventure for Kirsty, Rachael and the rainbow fairies", W / 2, 278);
+
+    drawFairy(200, 315, fairies[0].color, 1.26, true);
+    drawFairy(1015, 300, fairies[4].color, 1.16, true);
+    drawGirl(452, 445, characters[0], 1.5, 1, frame * 0.02, false);
+    drawGirl(812, 445, characters[1], 1.5, -1, frame * 0.02, false);
+
+    roundedRect(390, 550, 500, 92, 26, "rgba(255,255,255,.9)", "#7551a5", 4);
+    ctx.fillStyle = "#553372";
+    ctx.font = "800 31px system-ui";
+    ctx.fillText("Press ENTER or controller B", W / 2, 606);
+
+    ctx.font = "700 17px system-ui";
+    ctx.fillStyle = "#614f78";
+    ctx.fillText("Now with music, fuller boss battles and full screen play", W / 2, 676);
+  }
+
+  function drawCharacterSelect() {
+    const grd = ctx.createLinearGradient(0, 0, W, H);
+    grd.addColorStop(0, "#c8eeff");
+    grd.addColorStop(1, "#f9d2ff");
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, W, H);
+    drawSparkles(0, 0, W, H, 28, 2);
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#4c3475";
+    ctx.font = "900 52px system-ui";
+    ctx.fillText("Choose your adventurer", W / 2, 95);
+    ctx.font = "600 20px system-ui";
+    ctx.fillStyle = "#66517e";
+    ctx.fillText("Use left and right, then press B or Enter", W / 2, 132);
+
+    drawCharacterCard(215, 210, 345, 365, 0);
+    drawCharacterCard(720, 210, 345, 365, 1);
+
+    roundedRect(420, 596, 440, 78, 24, "#ffffff", "#6b4ba0", 4);
+    ctx.fillStyle = "#4d3178";
+    ctx.font = "850 27px system-ui";
+    ctx.fillText(`Play as ${characters[selectedCharacter].name}`, W / 2, 646);
+  }
+
+  function drawCharacterCard(x, y, w, h, index) {
+    const selected = selectedCharacter === index;
+    roundedRect(x, y, w, h, 30, selected ? "rgba(255,255,255,.98)" : "rgba(255,255,255,.66)", selected ? "#7a54b5" : "rgba(90,66,120,.25)", selected ? 6 : 3);
+    if (selected) {
+      ctx.save();
+      ctx.globalAlpha = 0.6;
+      drawSparkles(x, y, w, h, 12, index + 5);
+      ctx.restore();
+    }
+    drawGirl(x + w / 2, y + 162, characters[index], 2.05, 1, frame * 0.02, false);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#4c3475";
+    ctx.font = "900 34px system-ui";
+    ctx.fillText(characters[index].name, x + w / 2, y + 310);
+    ctx.font = "650 16px system-ui";
+    ctx.fillStyle = "#6c5a7e";
+    ctx.fillText(index === 0 ? "Quick, brave and curious" : "Kind, clever and adventurous", x + w / 2, y + 338);
+  }
+
+  function drawWorld() {
+    drawBackground(level.fairy, currentLevel);
+    ctx.save();
+    ctx.translate(-cameraX, 0);
+
+    drawFarThemeDecorations(level.fairy, currentLevel);
+    for (const p of level.platforms) drawPlatform(p, level.fairy, currentLevel);
+    for (const ladder of level.ladders) drawLadder(ladder, level.fairy);
+    for (const mp of level.movingPlatforms) drawMovingPlatform(mp, level.fairy, currentLevel);
+    for (const sp of level.springs) drawSpringPad(sp, level.fairy, currentLevel);
+    drawNearThemeDecorations(level.fairy, currentLevel);
+
+    for (const g of level.gems) if (!g.collected) drawGem(g.x, g.y + Math.sin(frame * 0.06 + g.phase) * 8, g.color);
+    if (!level.bonusStar.collected) drawBonusStar(level.bonusStar.x, level.bonusStar.y + Math.sin(frame * 0.07 + level.bonusStar.phase) * 8);
+    for (const e of level.enemies) if (e.alive) drawGoblin(e);
+    for (const p of level.projectiles) drawSnowball(p.x, p.y, p.spin || 0);
+    for (const ic of activeIcicles) drawIcicle(ic);
+    if (level.boss.alive) drawJackFrost(level.boss);
+    else drawFairy(5226, 474 + Math.sin(frame * 0.045) * 12, level.fairy.color, 1.18, true);
+    drawGirl(player.x + player.w / 2, player.y + player.h / 2, characters[selectedCharacter], 1.0, player.facing, player.runPhase, true);
+    for (const burst of comicBursts) drawComicBurst(burst);
+    ctx.restore();
+  }
+
+  function drawBackground(fairy, index) {
+    const grd = ctx.createLinearGradient(0, 0, 0, H);
+    grd.addColorStop(0, fairy.sky1);
+    grd.addColorStop(0.56, fairy.sky2);
+    grd.addColorStop(1, "#f8f1ff");
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, W, H);
+
+    if (index === 4) {
+      ctx.fillStyle = "rgba(124, 212, 255, 0.38)";
+      ctx.fillRect(0, 520, W, 200);
+      for (let i = 0; i < 8; i++) {
+        ctx.fillStyle = `rgba(255,255,255,${0.15 + (i % 2) * 0.06})`;
+        ctx.fillRect(0, 545 + i * 12, W, 4);
+      }
+    }
+
+    const par1 = -cameraX * 0.16;
+    ctx.save();
+    ctx.translate(par1 % 560, 0);
+    for (let i = -1; i < 4; i++) {
+      const x = i * 560;
+      ctx.fillStyle = index === 5 || index === 6 ? "rgba(255,255,255,.11)" : "rgba(255,255,255,.2)";
+      ctx.beginPath();
+      ctx.arc(x + 220, 490, 245, Math.PI, 0);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    if (index === 5 || index === 6) {
+      drawStars(index === 6 ? 40 : 26);
+      if (index === 6) drawMoon(1040, 128, 54);
+    }
+
+    const par2 = -cameraX * 0.33;
+    ctx.save();
+    ctx.translate(par2 % 720, 0);
+    for (let i = -1; i < 4; i++) {
+      if (index === 3) drawTreeSilhouette(i * 720 + 150, 470, 1.0 + (i % 2) * 0.15, "rgba(40,101,63,.30)");
+      else if (index === 1) drawOrchardSilhouette(i * 720 + 170, 480, 1.0 + (i % 2) * 0.15);
+      else if (index === 2) drawSunflowerSilhouette(i * 720 + 140, 515, 0.9 + (i % 3) * 0.08);
+      else drawCloud(i * 720 + 180, 120 + (i % 2) * 80, 0.8 + (i % 3) * 0.12);
+    }
+    ctx.restore();
+  }
+
+  function drawFarThemeDecorations(fairy, index) {
+    if (index === 0) {
+      for (let x = 260; x < LEVEL_WIDTH; x += 410) drawHillFlowerPatch(x, 575, fairy.color);
+    } else if (index === 1) {
+      for (let x = 260; x < LEVEL_WIDTH; x += 520) drawOrangeTree(x, 540, 1.0);
+    } else if (index === 2) {
+      for (let x = 240; x < LEVEL_WIDTH; x += 410) drawSunflower(x, 560, 1.15);
+    } else if (index === 3) {
+      for (let x = 260; x < LEVEL_WIDTH; x += 440) drawTree(x, 545, 1.18, fairy.color);
+    } else if (index === 4) {
+      for (let x = 260; x < LEVEL_WIDTH; x += 490) drawShellCluster(x, 582, 1.0);
+    } else if (index === 5) {
+      for (let x = 280; x < LEVEL_WIDTH; x += 460) drawCrystalCluster(x, 575, 1.0, fairy.color);
+    } else if (index === 6) {
+      for (let x = 260; x < LEVEL_WIDTH; x += 430) drawMoonFlowers(x, 575, fairy.color);
+    }
+  }
+
+  function drawNearThemeDecorations(fairy, index) {
+    for (let x = 170; x < LEVEL_WIDTH; x += 320) {
+      const y = GROUND_Y - 14;
+      if (index === 0) drawTulip(x, y, fairy.color);
+      else if (index === 1) drawMiniPumpkin(x, y, fairy.accent);
+      else if (index === 2) drawDaisy(x, y, "#ffd33f");
+      else if (index === 3) drawFernLeaf(x, y, fairy.color);
+      else if (index === 4) drawSeaFlower(x, y, fairy.color);
+      else if (index === 5) drawCrystalBud(x, y, fairy.color);
+      else drawNightBloom(x, y, fairy.color);
+    }
+  }
+
+  function drawPlatform(p, fairy, index) {
+    if (p.h > 40) {
+      ctx.fillStyle = fairy.land;
+      ctx.fillRect(p.x, p.y, p.w, p.h);
+      ctx.fillStyle = "rgba(54,54,74,.18)";
+      for (let x = p.x + 20; x < p.x + p.w; x += 45) {
+        ctx.beginPath();
+        ctx.arc(x, p.y + 42 + ((x / 45) % 2) * 25, 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      const topColor = index === 4 ? "#c9f5ff" : index === 5 ? "#a6a0ff" : index === 6 ? "#ddb8ff" : "#69df74";
+      const edgeColor = index === 2 ? "#fff18b" : topColor;
+      ctx.fillStyle = topColor;
+      ctx.fillRect(p.x, p.y - 11, p.w, 14);
+      ctx.fillStyle = edgeColor;
+      ctx.fillRect(p.x, p.y - 11, p.w, 5);
+    } else {
+      const plate = index === 5 ? "#e9e4ff" : index === 4 ? "#fff5d8" : "#ffe8c9";
+      roundedRect(p.x, p.y, p.w, p.h, 10, plate, "rgba(100,65,95,.2)", 2);
+      ctx.fillStyle = fairy.color;
+      ctx.globalAlpha = 0.36;
+      ctx.fillRect(p.x + 8, p.y + 5, p.w - 16, 5);
+      ctx.globalAlpha = 1;
+      if (index === 3) {
+        ctx.fillStyle = "rgba(78,124,87,.18)";
+        ctx.fillRect(p.x + 10, p.y + 10, p.w - 20, 6);
+      }
+    }
+  }
+
+  function drawLadder(ladder, fairy) {
+    ctx.save();
+    const top = ladder.topY + 2;
+    const bottom = ladder.bottomY;
+    ctx.strokeStyle = "#8c653c";
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(ladder.x + 5, top); ctx.lineTo(ladder.x + 5, bottom);
+    ctx.moveTo(ladder.x + ladder.w - 5, top); ctx.lineTo(ladder.x + ladder.w - 5, bottom);
+    ctx.stroke();
+    ctx.strokeStyle = "#c79459";
+    ctx.lineWidth = 4;
+    for (let y = top + 13; y < bottom; y += 22) {
+      ctx.beginPath();
+      ctx.moveTo(ladder.x + 6, y);
+      ctx.lineTo(ladder.x + ladder.w - 6, y);
+      ctx.stroke();
+    }
+    ctx.fillStyle = fairy.color;
+    ctx.globalAlpha = 0.35;
+    ctx.beginPath(); ctx.arc(ladder.x + ladder.w / 2, top + 5, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawBonusStar(x, y) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Math.sin(frame * 0.04) * 0.18);
+    ctx.shadowColor = "#fff17e";
+    ctx.shadowBlur = 20;
+    ctx.fillStyle = "#ffe66f";
+    drawStar(0, 0, 16, 7.5);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "rgba(255,255,255,.85)";
+    drawStar(-4, -5, 4, 2);
+    ctx.restore();
+  }
+
+  function drawComicBurst(b) {
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, b.life / 18);
+    ctx.translate(b.x, b.y);
+    ctx.rotate(-0.1);
+    ctx.textAlign = "center";
+    ctx.font = "900 24px system-ui";
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = "rgba(255,255,255,.9)";
+    ctx.strokeText(b.text, 0, 0);
+    ctx.fillStyle = "#7d4e9e";
+    ctx.fillText(b.text, 0, 0);
+    ctx.restore();
+  }
+
+  function drawMovingPlatform(p, fairy, index) {
+    ctx.save();
+    if (p.style === "cloud") {
+      ctx.fillStyle = "rgba(255,255,255,0.95)";
+      ctx.beginPath();
+      ctx.arc(p.x + 26, p.y + 14, 16, 0, Math.PI * 2);
+      ctx.arc(p.x + 52, p.y + 10, 20, 0, Math.PI * 2);
+      ctx.arc(p.x + 82, p.y + 14, 17, 0, Math.PI * 2);
+      ctx.arc(p.x + 112, p.y + 15, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = fairy.color;
+      ctx.globalAlpha = 0.3;
+      ctx.fillRect(p.x + 16, p.y + 9, p.w - 32, 5);
+    } else if (p.style === "leaf") {
+      ctx.fillStyle = "#95dd78";
+      roundedRect(p.x, p.y + 3, p.w, p.h - 3, 12, "#95dd78", "rgba(70,120,60,.25)", 2);
+      ctx.strokeStyle = "#64a852";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(p.x + 12, p.y + 12); ctx.lineTo(p.x + p.w - 12, p.y + 12); ctx.stroke();
+    } else if (p.style === "flower") {
+      roundedRect(p.x, p.y + 5, p.w, p.h - 5, 12, "#ffeccf", "rgba(120,90,120,.25)", 2);
+      for (let i = 0; i < 4; i++) {
+        const fx = p.x + 24 + i * 28;
+        drawDaisy(fx, p.y + 25, i % 2 ? fairy.color : "#ffd33f");
+      }
+    } else {
+      roundedRect(p.x, p.y + 4, p.w, p.h - 4, 12, "#fff4da", "rgba(120,90,120,.25)", 2);
+      ctx.fillStyle = "#ffe277";
+      for (let i = 0; i < 5; i++) drawStar(p.x + 20 + i * 24, p.y + 14, 6, 3);
+    }
+    ctx.restore();
+  }
+
+  function drawSpringPad(sp, fairy, index) {
+    ctx.save();
+    const pulse = clamp(sp.pulse || 0, 0, 1);
+    const cx = sp.x + sp.w / 2;
+
+    if (pulse > 0.02) {
+      ctx.save();
+      ctx.globalAlpha = pulse * 0.75;
+      ctx.strokeStyle = "rgba(255,255,255,.95)";
+      ctx.lineWidth = 3;
+      for (let r = 0; r < 3; r++) {
+        ctx.beginPath();
+        ctx.ellipse(cx, sp.y + 2, 24 + r * 15 + (1 - pulse) * 20, 8 + r * 5 + (1 - pulse) * 8, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.fillStyle = "#ffe779";
+      for (let i = 0; i < 7; i++) {
+        const a = -Math.PI + i * Math.PI / 6;
+        const rr = 25 + (1 - pulse) * 36;
+        drawStar(cx + Math.cos(a) * rr, sp.y - 8 + Math.sin(a) * rr * 0.55, 5 + pulse * 3, 2.3 + pulse);
+      }
+      ctx.restore();
+    }
+
+    if (sp.style === "mushroom") {
+      const squashY = 1 - pulse * 0.42;
+      const widen = 1 + pulse * 0.30;
+      ctx.translate(cx, sp.y + 4);
+      ctx.scale(widen, squashY);
+
+      const stemGrad = ctx.createLinearGradient(0, 0, 0, 22);
+      stemGrad.addColorStop(0, "#fff9e9");
+      stemGrad.addColorStop(1, "#e8d5b7");
+      roundedRect(-7, 1, 14, 20, 5, stemGrad, "rgba(120,95,80,.2)", 1.5);
+
+      const capGrad = ctx.createRadialGradient(-7, -8, 4, 0, -5, 24);
+      capGrad.addColorStop(0, "#ff9bc0");
+      capGrad.addColorStop(0.5, fairy.color);
+      capGrad.addColorStop(1, "#a73c70");
+      ctx.fillStyle = capGrad;
+      ctx.beginPath();
+      ctx.moveTo(-25, 1);
+      ctx.quadraticCurveTo(-18, -22 - pulse * 3, 0, -24 - pulse * 4);
+      ctx.quadraticCurveTo(18, -22 - pulse * 3, 25, 1);
+      ctx.quadraticCurveTo(10, 6, 0, 5);
+      ctx.quadraticCurveTo(-10, 6, -25, 1);
+      ctx.fill();
+
+      ctx.fillStyle = "rgba(255,255,255,.88)";
+      [[-11,-8,4.5],[8,-12,4],[1,-4,3.2]].forEach(d => {
+        ctx.beginPath(); ctx.arc(d[0], d[1], d[2], 0, Math.PI * 2); ctx.fill();
+      });
+
+      if (pulse > 0.1) {
+        ctx.fillStyle = "rgba(255,255,255,.6)";
+        ctx.beginPath();
+        ctx.ellipse(0, 3, 19, 3.5 + pulse * 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    } else if (sp.style === "star") {
+      roundedRect(sp.x + 5, sp.y + 5 + pulse * 3, sp.w - 10, 10 - pulse * 2, 4, "#b5f7ff", "rgba(60,130,150,.3)", 2);
+      ctx.fillStyle = "#ffe277";
+      drawStar(cx, sp.y - 2 - pulse * 4, 12 + pulse * 3, 5 + pulse);
+    } else {
+      const flowerSquash = 1 - pulse * 0.24;
+      ctx.save();
+      ctx.translate(cx, sp.y);
+      ctx.scale(1 + pulse * 0.15, flowerSquash);
+      ctx.fillStyle = "#60b55b";
+      ctx.fillRect(-4, 2, 8, 16);
+      ctx.fillStyle = fairy.color;
+      for (let i = 0; i < 6; i++) {
+        const a = i * Math.PI * 2 / 6;
+        ctx.beginPath();
+        ctx.arc(Math.cos(a) * 10, Math.sin(a) * 8, 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = "#ffe474";
+      ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  function drawHUD() {
+    roundedRect(18, 18, 445, 94, 22, "rgba(31,22,65,.76)", "rgba(255,255,255,.3)", 2);
+    ctx.textAlign = "left";
+    ctx.fillStyle = "white";
+    ctx.font = "900 22px system-ui";
+    ctx.fillText(`Level ${currentLevel + 1}: ${level.fairy.theme}`, 36, 49);
+    ctx.font = "650 15px system-ui";
+    ctx.fillStyle = "rgba(255,255,255,.88)";
+    ctx.fillText(`Find ${level.fairy.name}`, 36, 76);
+
+    for (let i = 0; i < player.maxHearts; i++) drawHeart(36 + i * 31, 94, i < player.hearts ? "#ff5578" : "rgba(255,255,255,.18)");
+
+    roundedRect(W - 265, 18, 247, 94, 22, "rgba(31,22,65,.76)", "rgba(255,255,255,.3)", 2);
+    ctx.textAlign = "right";
+    ctx.fillStyle = "white";
+    ctx.font = "800 18px system-ui";
+    ctx.fillText(`Score ${score.toLocaleString()}`, W - 35, 50);
+    ctx.font = "700 16px system-ui";
+    ctx.fillText(`Rainbow gems ${totalGems}`, W - 35, 78);
+    ctx.fillText(`Magic star ${level.bonusStar.collected ? "★" : "☆"}`, W - 35, 100);
+
+    if (level.boss.alive && player.x > 4100) {
+      roundedRect(420, 20, 440, 64, 18, "rgba(40,28,76,.82)", "rgba(255,255,255,.25)", 2);
+      ctx.textAlign = "center";
+      ctx.font = "900 17px system-ui";
+      ctx.fillStyle = "white";
+      ctx.fillText("JACK FROST", 640, 44);
+      const bw = 300;
+      roundedRect(490, 55, bw, 12, 6, "rgba(255,255,255,.2)");
+      roundedRect(490, 55, bw * (level.boss.hp / level.boss.maxHp), 12, 6, "#7be7ff");
+    }
+
+    if (messageTimer > 0 && state === "playing") {
+      ctx.globalAlpha = Math.min(1, messageTimer / 25);
+      roundedRect(300, 125, 680, 62, 20, "rgba(255,255,255,.9)", "rgba(95,63,130,.25)", 2);
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#4a3473";
+      ctx.font = "850 22px system-ui";
+      ctx.fillText(message, W / 2, 164);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function drawPause() {
+    ctx.fillStyle = "rgba(9,9,28,.55)";
+    ctx.fillRect(0, 0, W, H);
+    roundedRect(420, 235, 440, 250, 28, "rgba(35,31,72,.96)", "rgba(255,255,255,.28)", 3);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "white";
+    ctx.font = "900 48px system-ui";
+    ctx.fillText("Paused", W / 2, 315);
+    ctx.font = "650 20px system-ui";
+    ctx.fillText("Press P or controller Start", W / 2, 368);
+    ctx.fillText(`Sound: ${soundOn ? "On" : "Off"}   Music: ${musicOn ? "On" : "Off"}`, W / 2, 406);
+    ctx.fillText("Press F for full screen", W / 2, 442);
+  }
+
+  function drawLevelComplete() {
+    ctx.fillStyle = "rgba(22,13,52,.56)";
+    ctx.fillRect(0, 0, W, H);
+    roundedRect(290, 126, 700, 470, 34, "rgba(255,255,255,.96)", level.fairy.color, 7);
+    drawFairy(640, 268, level.fairy.color, 1.7, true);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#4b3372";
+    ctx.font = "900 46px system-ui";
+    ctx.fillText(`${level.fairy.short} found!`, W / 2, 392);
+    ctx.font = "650 21px system-ui";
+    ctx.fillStyle = "#68567a";
+    ctx.fillText(`You rescued ${level.fairy.name}.`, W / 2, 433);
+    ctx.fillText(currentLevel < fairies.length - 1 ? "Another fairy is waiting in the next land." : "All seven rainbow fairies are safe.", W / 2, 466);
+    ctx.fillText(`Level score: ${score.toLocaleString()}   Gems found: ${totalGems}`, W / 2, 500);
+    roundedRect(420, 522, 440, 64, 22, "#6a4ca0");
+    ctx.fillStyle = "white";
+    ctx.font = "850 22px system-ui";
+    ctx.fillText(currentLevel < fairies.length - 1 ? "Press B / Enter for next level" : "Press B / Enter to celebrate", W / 2, 562);
+  }
+
+  function drawGameOver() {
+    ctx.fillStyle = "rgba(15,12,42,.62)";
+    ctx.fillRect(0, 0, W, H);
+    roundedRect(350, 205, 580, 310, 34, "rgba(255,255,255,.96)", "#7357a5", 6);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#51376f";
+    ctx.font = "900 47px system-ui";
+    ctx.fillText("Magic recharge!", W / 2, 305);
+    ctx.font = "650 21px system-ui";
+    ctx.fillStyle = "#6c5a7b";
+    ctx.fillText("Jack Frost got the better of you this time.", W / 2, 352);
+    ctx.fillText("Try the level again from the start.", W / 2, 383);
+    roundedRect(440, 425, 400, 60, 20, "#6a4ca0");
+    ctx.fillStyle = "white";
+    ctx.font = "850 21px system-ui";
+    ctx.fillText("Press B / Enter to try again", W / 2, 463);
+  }
+
+  function drawVictory() {
+    const grd = ctx.createLinearGradient(0, 0, 0, H);
+    grd.addColorStop(0, "#c5f0ff");
+    grd.addColorStop(1, "#ffd9fb");
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, W, H);
+    drawRainbow(640, 490, 500, 46);
+    drawSparkles(0, 0, W, H, 45, 9);
+    for (let i = 0; i < fairies.length; i++) {
+      drawFairy(258 + i * 126, 345 + Math.sin(frame * 0.06 + i) * 18, fairies[i].color, 0.95, true);
+    }
+    drawGirl(530, 500, characters[0], 1.28, 1, frame * 0.03, false);
+    drawGirl(750, 500, characters[1], 1.28, -1, frame * 0.03, false);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#4f3375";
+    ctx.font = "900 62px system-ui";
+    ctx.fillText("Rainbow Magic Restored!", W / 2, 135);
+    ctx.font = "750 23px system-ui";
+    ctx.fillStyle = "#66527d";
+    ctx.fillText("You found all seven fairies and sent Jack Frost packing.", W / 2, 188);
+    ctx.fillText(`Final score: ${score.toLocaleString()}   Rainbow gems: ${totalGems}`, W / 2, 230);
+    roundedRect(420, 600, 440, 66, 22, "rgba(255,255,255,.9)", "#6d4a9f", 4);
+    ctx.fillStyle = "#513476";
+    ctx.font = "850 22px system-ui";
+    ctx.fillText("Press B / Enter to play again", W / 2, 641);
+  }
+
+  function drawGirl(cx, cy, c, scale = 1, facing = 1, run = 0, flicker = true) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(facing * scale, scale);
+    if (flicker && player && player.invuln > 0 && state === "playing" && Math.floor(frame / 4) % 2 === 0) ctx.globalAlpha = 0.45;
+
+    const isActivePlayer = flicker && player && state === "playing";
+    const moveAmount = isActivePlayer ? Math.min(1, Math.abs(player.vx || 0) / 6.5) : 0.42;
+    const climbing = isActivePlayer && player.climbing;
+    const squash = isActivePlayer ? player.landSquash : 0;
+    const launchStretch = isActivePlayer ? player.launchStretch : 0;
+    const bob = climbing ? 0 : Math.sin(run * 1.8) * 2.2 * moveAmount;
+    const armSwing = climbing ? Math.sin(run * 1.7) * 7.2 : Math.sin(run) * 5.1 * (0.28 + moveAmount * 0.72);
+    const legSwing = climbing ? -Math.sin(run * 1.7) * 6.2 : Math.sin(run) * 5.8 * (0.28 + moveAmount * 0.72);
+    const hairBounce = climbing ? 0.5 : Math.sin(run * 1.7 + 0.8) * 1.45 * (0.3 + moveAmount * 0.7);
+    const skirtSway = climbing ? Math.sin(run) * 1.0 : Math.sin(run * 1.5) * 2.0 * (0.25 + moveAmount * 0.75);
+    ctx.translate(0, bob + squash * 2.0 - launchStretch * 2.5);
+    ctx.scale(1 + squash * 0.08 - launchStretch * 0.055, 1 - squash * 0.07 + launchStretch * 0.13);
+
+    if (c.hairStyle === "curlyPonytail") {
+      ctx.fillStyle = c.hair;
+      ctx.beginPath(); ctx.arc(-17, -40 + hairBounce, 9, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-22, -34 + hairBounce, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-17, -28 + hairBounce, 6.5, 0, Math.PI * 2); ctx.fill();
+    }
+
+    ctx.strokeStyle = c.skin;
+    ctx.lineWidth = 5.6;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(-14, -8); ctx.lineTo(-22 + (climbing ? -armSwing * 0.2 : 0), 2 + armSwing); ctx.lineTo(-23, 8 + armSwing * 0.2);
+    ctx.moveTo(14, -8); ctx.lineTo(22 + (climbing ? armSwing * 0.2 : 0), -3 - armSwing); ctx.lineTo(23, 3 - armSwing * 0.2);
+    ctx.stroke();
+
+    ctx.strokeStyle = c.leggings;
+    ctx.lineWidth = 5.5;
+    ctx.beginPath();
+    ctx.moveTo(-8, 20); ctx.lineTo(-10 + legSwing, 36); ctx.lineTo(-13 + legSwing, 42);
+    ctx.moveTo(8, 20); ctx.lineTo(10 - legSwing, 36); ctx.lineTo(13 - legSwing, 42);
+    ctx.stroke();
+
+    ctx.fillStyle = c.shoes;
+    roundedRect(-19 + legSwing, 39, 12, 6, 2, c.shoes);
+    roundedRect(7 - legSwing, 39, 12, 6, 2, c.shoes);
+
+    const dressGrad = ctx.createLinearGradient(0, -16, 0, 26);
+    dressGrad.addColorStop(0, c.shirt);
+    dressGrad.addColorStop(1, c.trim);
+    roundedRect(-16, -22, 32, 28, 9, dressGrad);
+    ctx.fillStyle = c.skirt;
+    ctx.beginPath();
+    ctx.moveTo(-18, 4); ctx.lineTo(18, 4); ctx.lineTo(13 + skirtSway, 25); ctx.lineTo(-13 + skirtSway, 25); ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = c.trim;
+    ctx.fillRect(-13, 18, 26, 3.5);
+
+    if (c.locket) {
+      ctx.strokeStyle = "#d7d8e4";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(0, -12, 7, 0.2, Math.PI - 0.2); ctx.stroke();
+      ctx.fillStyle = "#f4f4ff";
+      ctx.beginPath(); ctx.arc(0, -5, 2.4, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // Hair sits behind the head. Keep its lower edge above the neck so it
+    // cannot read as a beard or overlap the shirt beneath the chin.
+    ctx.fillStyle = c.hair;
+    if (c.hairStyle === "bob") {
+      ctx.beginPath();
+      ctx.ellipse(0, -37.5, 19.3, 19.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-17.5, -39); ctx.quadraticCurveTo(-20.5, -31 + hairBounce, -17.0, -24.5); ctx.lineTo(-11.5, -26.5); ctx.lineTo(-10.5, -39); ctx.closePath(); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(17.5, -39); ctx.quadraticCurveTo(20.5, -31 - hairBounce, 17.0, -24.5); ctx.lineTo(11.5, -26.5); ctx.lineTo(10.5, -39); ctx.closePath(); ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.ellipse(0, -38, 19.2, 19.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-17, -39); ctx.quadraticCurveTo(-20, -31, -17, -24.5); ctx.lineTo(-11, -27); ctx.lineTo(-10, -40); ctx.closePath(); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(17, -39); ctx.quadraticCurveTo(20, -31, 17, -24.5); ctx.lineTo(11, -27); ctx.lineTo(10, -40); ctx.closePath(); ctx.fill();
+    }
+
+    // Face is painted over the rear hair, followed by a visible neck gap.
+    ctx.fillStyle = c.skin;
+    ctx.beginPath();
+    ctx.ellipse(0, -35, 13.8, 15.7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    roundedRect(-4.2, -22.0, 8.4, 8.0, 3.2, c.skin);
+    ctx.fillStyle = c.shirt;
+    ctx.beginPath();
+    ctx.moveTo(-9.5, -16.0); ctx.lineTo(9.5, -16.0); ctx.lineTo(7.5, -12.0); ctx.lineTo(-7.5, -12.0); ctx.closePath();
+    ctx.fill();
+
+    // A restrained fringe sits only on the forehead rather than covering the face.
+    ctx.fillStyle = c.hair;
+    if (c.hairStyle === "bob") {
+      ctx.beginPath();
+      ctx.moveTo(-12.5, -43.5);
+      ctx.quadraticCurveTo(-5, -51.5, 5.5, -49.5);
+      ctx.quadraticCurveTo(11.5, -48.2, 13, -42.0);
+      ctx.quadraticCurveTo(7.5, -43.7, 4.5, -39.5);
+      ctx.quadraticCurveTo(0, -43.0, -4.0, -39.2);
+      ctx.quadraticCurveTo(-8.0, -42.7, -12.5, -41.0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = c.hair2;
+      ctx.beginPath();
+      ctx.moveTo(-10.5, -45); ctx.quadraticCurveTo(-1, -50, 9.5, -45); ctx.quadraticCurveTo(0, -46.5, -8, -42.8); ctx.closePath(); ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.moveTo(-12.2, -44.0);
+      ctx.quadraticCurveTo(-7, -51, 1, -51);
+      ctx.quadraticCurveTo(9.5, -50, 12.8, -43.2);
+      ctx.quadraticCurveTo(7.5, -44.0, 4.5, -39.8);
+      ctx.quadraticCurveTo(0.5, -43.4, -3.5, -40.0);
+      ctx.quadraticCurveTo(-7.8, -43.5, -12.2, -41.3);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = c.hair2;
+      for (const q of [[-8.5,-46,3.8],[-2,-48.5,4.0],[5,-47.8,3.8]]) {
+        ctx.beginPath(); ctx.arc(q[0], q[1], q[2], 0, Math.PI * 2); ctx.fill();
+      }
+    }
+
+    // Short temple locks frame the upper face only. They stop well above
+    // the jaw and neck, leaving the whole lower face cleanly visible.
+    ctx.fillStyle = c.hair;
+    ctx.beginPath(); ctx.ellipse(-14.2, -36.0, 2.8, 5.5, -0.12, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(14.2, -36.0, 2.8, 5.5, 0.12, 0, Math.PI * 2); ctx.fill();
+
+    if (c.hairStyle === "bob") {
+      ctx.fillStyle = c.bow;
+      ctx.beginPath(); ctx.ellipse(-8, -50, 4.5, 3.1, 0.2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(-1, -50, 4.0, 3.1, -0.2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-4.5, -50, 2.1, 0, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.fillStyle = c.bow;
+      ctx.beginPath(); ctx.ellipse(-14, -44, 4.2, 2.8, -0.5, 0, Math.PI * 2); ctx.fill();
+    }
+
+    const eyeClosed = Math.floor((frame + Math.abs(cx)) / 95) % 22 === 0;
+    ctx.strokeStyle = "#604c4f";
+    ctx.lineWidth = 1.25;
+    ctx.beginPath(); ctx.moveTo(-7, -41); ctx.quadraticCurveTo(-4.5, -42.5, -2, -41); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(2, -41); ctx.quadraticCurveTo(4.5, -42.5, 7, -41); ctx.stroke();
+
+    if (eyeClosed) {
+      ctx.beginPath(); ctx.moveTo(-6.2, -36.2); ctx.quadraticCurveTo(-4.5, -35, -2.8, -36.2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(2.8, -36.2); ctx.quadraticCurveTo(4.5, -35, 6.2, -36.2); ctx.stroke();
+    } else {
+      ctx.fillStyle = "rgba(255,255,255,.95)";
+      ctx.beginPath(); ctx.ellipse(-4.5, -36, 2.7, 2.2, 0.03, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(4.5, -36, 2.7, 2.2, -0.03, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = c.eyes;
+      ctx.beginPath(); ctx.arc(-4.2, -35.8, 1.25, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(4.8, -35.8, 1.25, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,.9)";
+      ctx.beginPath(); ctx.arc(-3.8, -36.2, 0.45, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(5.2, -36.2, 0.45, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "rgba(80,60,70,.65)";
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(-7.0, -36.8); ctx.quadraticCurveTo(-4.5, -39.0, -2.0, -36.8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(2.0, -36.8); ctx.quadraticCurveTo(4.5, -39.0, 7.0, -36.8); ctx.stroke();
+    }
+
+    ctx.strokeStyle = "rgba(177,118,108,.75)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0.3, -34); ctx.quadraticCurveTo(-0.8, -31.8, 0.8, -31.4);
+    ctx.stroke();
+
+    ctx.fillStyle = c.cheeks;
+    ctx.globalAlpha *= 0.45;
+    ctx.beginPath(); ctx.ellipse(-8.6, -31.0, 3.3, 1.8, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(8.6, -31.0, 3.3, 1.8, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+
+    ctx.strokeStyle = "#b36a72";
+    ctx.lineWidth = 1.35;
+    ctx.beginPath();
+    ctx.moveTo(-2.8, -28.8); ctx.quadraticCurveTo(0, -26.8, 3.4, -29.0);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawGoblin(e) {
+    const bob = e.mode === "climb" ? 0 : Math.sin(e.bob) * 2;
+    const blink = Math.floor(e.blink / 18) % 22 === 0;
+    const climbSwing = Math.sin(e.bob * 3.2) * 6;
+    ctx.save();
+    ctx.translate(e.x + e.w / 2, e.y + e.h / 2 + bob);
+    if (e.vx < 0 && e.mode !== "climb") ctx.scale(-1, 1);
+
+    if (e.mode === "climb") {
+      ctx.strokeStyle = "#4c9c4c";
+      ctx.lineWidth = 5;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(-11, 4); ctx.lineTo(-18, -8 + climbSwing);
+      ctx.moveTo(11, 4); ctx.lineTo(18, -8 - climbSwing);
+      ctx.moveTo(-8, 18); ctx.lineTo(-14, 28 - climbSwing);
+      ctx.moveTo(8, 18); ctx.lineTo(14, 28 + climbSwing);
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = "#4c9c4c";
+    ctx.beginPath(); ctx.moveTo(-18, -10); ctx.lineTo(-31, -18); ctx.lineTo(-21, 1); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(18, -10); ctx.lineTo(31, -18); ctx.lineTo(21, 1); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, -6, 18, 0, Math.PI * 2); ctx.fill();
+
+    const coat = ctx.createLinearGradient(0, 4, 0, 32);
+    coat.addColorStop(0, "#7c61a8");
+    coat.addColorStop(1, "#5d477f");
+    roundedRect(-17, 7, 34, 26, 10, coat);
+
+    if (e.mode !== "climb") {
+      ctx.strokeStyle = "#4c9c4c";
+      ctx.lineWidth = 4.5;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(-9, 25); ctx.lineTo(-12 + Math.sin(e.bob * 2) * 3, 33);
+      ctx.moveTo(9, 25); ctx.lineTo(12 - Math.sin(e.bob * 2) * 3, 33);
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = "#d0f1a4";
+    ctx.beginPath(); ctx.arc(-6, -8, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(8, -8, 3, 0, Math.PI * 2); ctx.fill();
+
+    ctx.strokeStyle = "#273325";
+    ctx.lineWidth = 1.7;
+    if (blink) {
+      ctx.beginPath(); ctx.moveTo(-9, -8); ctx.lineTo(-3, -8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(5, -8); ctx.lineTo(11, -8); ctx.stroke();
+    } else {
+      ctx.fillStyle = "#243423";
+      ctx.beginPath(); ctx.arc(-5.8, -8, 1.2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(8.2, -8, 1.2, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.beginPath();
+    if (e.mode === "climb") { ctx.moveTo(-3, 1); ctx.quadraticCurveTo(3, -2, 9, 1); }
+    else if (e.mood === "grumpy") { ctx.moveTo(-4, 0); ctx.quadraticCurveTo(3, 4, 10, 0); }
+    else { ctx.moveTo(-4, 2); ctx.quadraticCurveTo(3, -1, 10, 2); }
+    ctx.stroke();
+
+    ctx.fillStyle = "#c7b0ff";
+    ctx.beginPath(); ctx.arc(-9, 10, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(9, 10, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawJackFrost(b) {
+    ctx.save();
+    ctx.translate(b.x + b.w / 2, b.y + b.h / 2);
+    if (b.facing < 0) ctx.scale(-1, 1);
+    if (b.invuln > 0 && Math.floor(frame / 3) % 2 === 0) ctx.globalAlpha = 0.45;
+
+    ctx.fillStyle = "rgba(190,245,255,.42)";
+    ctx.beginPath();
+    ctx.moveTo(-40, 48); ctx.lineTo(40, 48); ctx.lineTo(30, -12); ctx.lineTo(-28, -12); ctx.closePath();
+    ctx.fill();
+
+    const robe = ctx.createLinearGradient(0, -20, 0, 45);
+    robe.addColorStop(0, "#7fe4ff");
+    robe.addColorStop(1, "#47bddc");
+    roundedRect(-28, -18, 56, 62, 18, robe);
+
+    ctx.fillStyle = "#e9fbff";
+    ctx.beginPath(); ctx.arc(2, -38, 25, 0, Math.PI * 2); ctx.fill();
+
+    ctx.fillStyle = "#d9f8ff";
+    ctx.beginPath();
+    ctx.moveTo(-22, -47); ctx.lineTo(-10, -76); ctx.lineTo(0, -52); ctx.lineTo(12, -81); ctx.lineTo(20, -47); ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = "#53709a";
+    ctx.beginPath(); ctx.arc(-7, -39, 2.2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(9, -39, 2.2, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#44617e";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    if (b.scaredTimer > 0) ctx.arc(3, -27, 6, Math.PI * 1.08, Math.PI * 1.92);
+    else { ctx.moveTo(-5, -28); ctx.quadraticCurveTo(3, -23, 11, -28); }
+    ctx.stroke();
+
+    ctx.strokeStyle = "#c7f4ff";
+    ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(25, 0); ctx.lineTo(42, 12); ctx.stroke();
+    drawSnowflake(45, 16, 11);
+
+    if (b.phase === 2) {
+      ctx.strokeStyle = "rgba(126, 233, 255, 0.8)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, -4, 52 + Math.sin(frame * 0.15) * 4, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawFairy(cx, cy, color, scale = 1, sparkle = false) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(scale, scale);
+    const flap = 0.96 + Math.sin(frame * 0.22) * 0.1;
+    const hover = Math.sin(frame * 0.09) * 2.2;
+    ctx.translate(0, hover);
+
+    const wingGrad = ctx.createRadialGradient(0, -10, 3, 0, -10, 26);
+    wingGrad.addColorStop(0, "rgba(255,255,255,0.92)");
+    wingGrad.addColorStop(1, "rgba(255,255,255,0.18)");
+    ctx.globalAlpha = 0.85;
+    ctx.fillStyle = wingGrad;
+    ctx.beginPath(); ctx.ellipse(-18, -18, 16, 28 * flap, -0.75, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(18, -18, 16, 28 * flap, 0.75, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(-9, 4, 11, 20 * flap, -0.45, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(9, 4, 11, 20 * flap, 0.45, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+
+    ctx.strokeStyle = "#f6cdb1";
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(-7, -2); ctx.lineTo(-16, 10);
+    ctx.moveTo(7, -2); ctx.lineTo(16, 7);
+    ctx.stroke();
+
+    const dress = ctx.createLinearGradient(0, -2, 0, 42);
+    dress.addColorStop(0, color);
+    dress.addColorStop(1, "rgba(255,255,255,0.35)");
+    ctx.fillStyle = dress;
+    ctx.beginPath();
+    ctx.moveTo(-13, 0); ctx.lineTo(13, 0); ctx.lineTo(18, 24); ctx.lineTo(0, 40); ctx.lineTo(-18, 24); ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,0.45)";
+    ctx.beginPath(); ctx.moveTo(-9, 18); ctx.lineTo(0, 35); ctx.lineTo(9, 18); ctx.closePath(); ctx.fill();
+
+    ctx.fillStyle = "#f6c9a8";
+    ctx.beginPath(); ctx.arc(0, -18, 13.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(0, -24, 13.5, Math.PI, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,0.35)";
+    ctx.beginPath(); ctx.arc(0, -24, 9, Math.PI, Math.PI * 2); ctx.fill();
+
+    ctx.fillStyle = "#fff1b2";
+    for (let i = 0; i < 5; i++) {
+      const a = Math.PI + i * Math.PI / 4;
+      ctx.beginPath(); ctx.arc(Math.cos(a) * 10, -35 + Math.sin(a) * 10, 3.2, 0, Math.PI * 2); ctx.fill();
+    }
+
+    ctx.fillStyle = "#4d3c58";
+    ctx.beginPath(); ctx.arc(-4, -20, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(4, -20, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#b36a72";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.arc(0, -15, 4.3, 0.35, 1.05); ctx.stroke();
+
+    ctx.fillStyle = "#ffe97a";
+    ctx.beginPath(); ctx.arc(0, 2, 4.2, 0, Math.PI * 2); ctx.fill();
+
+    ctx.strokeStyle = "#caa15e";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(15, 4); ctx.lineTo(26, -8); ctx.stroke();
+    ctx.fillStyle = "#ffe784";
+    drawStar(28, -10, 7, 3.2);
+
+    if (sparkle) {
+      ctx.fillStyle = "rgba(255,255,255,.95)";
+      for (let i = 0; i < 8; i++) {
+        const a = frame * 0.026 + i * Math.PI / 4;
+        const r = 44 + Math.sin(frame * 0.05 + i) * 5;
+        drawStar(Math.cos(a) * r, Math.sin(a) * r, 4.5, 2.2);
+      }
+      ctx.globalAlpha = 0.7;
+      for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        ctx.arc(-18 - i * 4, 14 + i * 6, 2.4 - i * 0.25, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+  }
+
+  function drawGem(x, y, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(frame * 0.025);
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 14;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, -13); ctx.lineTo(10, -3); ctx.lineTo(7, 11); ctx.lineTo(-7, 11); ctx.lineTo(-10, -3); ctx.closePath();
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "rgba(255,255,255,.7)";
+    ctx.beginPath(); ctx.moveTo(-3, -8); ctx.lineTo(4, -3); ctx.lineTo(0, 1); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawSnowball(x, y, spin = 0) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(spin);
+    ctx.fillStyle = "rgba(218,249,255,.95)";
+    ctx.shadowColor = "#9eeeff";
+    ctx.shadowBlur = 14;
+    ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "rgba(255,255,255,.85)";
+    ctx.beginPath(); ctx.arc(-4, -4, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "rgba(120,220,255,.85)";
+    ctx.lineWidth = 1.4;
+    for (let i = 0; i < 3; i++) {
+      ctx.rotate(Math.PI / 3);
+      ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(8, 0); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawIcicle(ic) {
+    ctx.save();
+    if (ic.warn > 0) {
+      ctx.strokeStyle = `rgba(255,80,120,${0.4 + 0.35 * Math.sin(frame * 0.4)})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(ic.x, 100);
+      ctx.lineTo(ic.x, GROUND_Y + 10);
+      ctx.stroke();
+      ctx.restore();
+      return;
+    }
+    ctx.translate(ic.x, ic.y);
+    const g = ctx.createLinearGradient(0, -20, 0, 20);
+    g.addColorStop(0, "#f6ffff");
+    g.addColorStop(1, "#76dbff");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(0, -20); ctx.lineTo(9, 17); ctx.lineTo(0, 22); ctx.lineTo(-9, 17); ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawSnowflake(x, y, r) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.strokeStyle = "#d9fbff";
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 3; i++) {
+      ctx.rotate(Math.PI / 3);
+      ctx.beginPath(); ctx.moveTo(-r, 0); ctx.lineTo(r, 0); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawCloud(x, y, scale) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+    ctx.fillStyle = "rgba(255,255,255,.76)";
+    ctx.beginPath();
+    ctx.arc(-38, 12, 27, 0, Math.PI * 2);
+    ctx.arc(-7, -4, 38, 0, Math.PI * 2);
+    ctx.arc(31, 10, 30, 0, Math.PI * 2);
+    ctx.arc(62, 18, 21, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawRainbow(cx, cy, radius, width) {
+    const colors = ["#f54f63", "#ff9d38", "#ffe05b", "#62d06e", "#5db7ff", "#6e64e7", "#b55ed5"];
+    ctx.save();
+    ctx.lineCap = "round";
+    for (let i = 0; i < colors.length; i++) {
+      ctx.strokeStyle = colors[i];
+      ctx.lineWidth = width / colors.length + 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius - i * (width / colors.length), Math.PI, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawHeart(x, y, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, 5);
+    ctx.bezierCurveTo(-12, -4, -15, 8, 0, 19);
+    ctx.bezierCurveTo(15, 8, 12, -4, 0, 5);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawStar(x, y, r1, r2) {
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + i * Math.PI / 5;
+      const r = i % 2 === 0 ? r1 : r2;
+      const px = x + Math.cos(a) * r;
+      const py = y + Math.sin(a) * r;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawSparkles(x, y, w, h, count, seed) {
+    ctx.save();
+    for (let i = 0; i < count; i++) {
+      const px = x + ((Math.sin(i * 91.17 + seed * 4.1) * 0.5 + 0.5) * w);
+      const py = y + ((Math.sin(i * 37.73 + seed * 9.2) * 0.5 + 0.5) * h);
+      const pulse = 0.45 + 0.55 * Math.sin(frame * 0.025 + i);
+      ctx.globalAlpha = 0.25 + pulse * 0.6;
+      ctx.fillStyle = "white";
+      drawStar(px, py, 3 + pulse * 3, 1.5 + pulse);
+    }
+    ctx.restore();
+  }
+
+  function drawStars(count) {
+    ctx.save();
+    for (let i = 0; i < count; i++) {
+      const x = ((Math.sin(i * 97.1) * 0.5 + 0.5) * W);
+      const y = 50 + ((Math.sin(i * 53.3) * 0.5 + 0.5) * 250);
+      const pulse = 0.55 + 0.45 * Math.sin(frame * 0.04 + i);
+      ctx.globalAlpha = 0.3 + pulse * 0.6;
+      ctx.fillStyle = i % 5 === 0 ? "#ffeaa9" : "white";
+      drawStar(x, y, 2 + pulse * 2, 1 + pulse * 0.7);
+    }
+    ctx.restore();
+  }
+
+  function drawMoon(x, y, r) {
+    ctx.save();
+    ctx.fillStyle = "rgba(255,250,223,0.88)";
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.beginPath(); ctx.arc(x + 18, y - 8, r * 0.88, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    ctx.globalCompositeOperation = "source-over";
+  }
+
+  function drawTreeSilhouette(x, y, scale, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+    ctx.fillStyle = color;
+    ctx.fillRect(-10, -60, 20, 60);
+    ctx.beginPath(); ctx.arc(0, -86, 46, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-28, -70, 34, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(26, -70, 34, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawOrchardSilhouette(x, y, scale) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+    ctx.fillStyle = "rgba(142, 99, 46, 0.24)";
+    ctx.fillRect(-8, -60, 16, 60);
+    ctx.fillStyle = "rgba(91, 163, 86, 0.26)";
+    ctx.beginPath(); ctx.arc(0, -82, 44, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawSunflowerSilhouette(x, y, scale) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+    ctx.strokeStyle = "rgba(109, 150, 63, 0.30)";
+    ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -80); ctx.stroke();
+    ctx.fillStyle = "rgba(248, 217, 63, 0.28)";
+    for (let i = 0; i < 10; i++) {
+      const a = i * Math.PI * 2 / 10;
+      ctx.beginPath(); ctx.arc(Math.cos(a) * 18, -82 + Math.sin(a) * 18, 10, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = "rgba(132, 95, 39, 0.30)";
+    ctx.beginPath(); ctx.arc(0, -82, 16, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawHillFlowerPatch(x, y, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = "rgba(255,255,255,0.25)";
+    ctx.beginPath(); ctx.arc(0, 0, 40, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = color;
+    for (let i = 0; i < 6; i++) {
+      const a = i * Math.PI * 2 / 6;
+      ctx.beginPath(); ctx.arc(Math.cos(a) * 16, Math.sin(a) * 10, 7, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = "#ffd46c";
+    ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawOrangeTree(x, y, scale) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+    ctx.fillStyle = "#87582d";
+    ctx.fillRect(-10, -60, 20, 60);
+    ctx.fillStyle = "#58a65d";
+    ctx.beginPath(); ctx.arc(0, -86, 42, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-28, -74, 30, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(28, -74, 30, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ff9b33";
+    [[-18,-88], [16,-93], [0,-73], [22,-68], [-22,-65]].forEach(p => {
+      ctx.beginPath(); ctx.arc(p[0], p[1], 5, 0, Math.PI * 2); ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  function drawSunflower(x, y, scale) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+    ctx.strokeStyle = "#5f973e";
+    ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -74); ctx.stroke();
+    ctx.fillStyle = "#7bc56a";
+    ctx.beginPath(); ctx.ellipse(-10, -35, 12, 5, -0.6, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(10, -48, 12, 5, 0.6, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ffd839";
+    for (let i = 0; i < 12; i++) {
+      const a = i * Math.PI * 2 / 12;
+      ctx.beginPath(); ctx.arc(Math.cos(a) * 16, -84 + Math.sin(a) * 16, 9, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = "#8c5c24";
+    ctx.beginPath(); ctx.arc(0, -84, 16, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawTree(x, y, scale, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+    ctx.fillStyle = "#70502e";
+    ctx.fillRect(-12, -70, 24, 70);
+    ctx.fillStyle = "#4caf64";
+    ctx.beginPath(); ctx.arc(0, -102, 50, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-35, -84, 36, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(38, -84, 36, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = color;
+    [[-20,-109],[19,-98],[0,-72]].forEach(p => { ctx.beginPath(); ctx.arc(p[0], p[1], 6, 0, Math.PI * 2); ctx.fill(); });
+    ctx.restore();
+  }
+
+  function drawShellCluster(x, y, scale) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+    ctx.fillStyle = "#fff1db";
+    ctx.beginPath(); ctx.moveTo(-22, 0); ctx.quadraticCurveTo(-14, -18, -4, 0); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(6, 0); ctx.quadraticCurveTo(18, -20, 28, 0); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#f6c0da";
+    ctx.beginPath(); ctx.arc(2, -5, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawCrystalCluster(x, y, scale, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+    ctx.fillStyle = color;
+    [[0,-24,16],[18,-16,12],[-16,-12,10]].forEach(c => {
+      ctx.beginPath();
+      ctx.moveTo(c[0], c[1]); ctx.lineTo(c[0] + c[2] / 2, 0); ctx.lineTo(c[0], 6); ctx.lineTo(c[0] - c[2] / 2, 0); ctx.closePath(); ctx.fill();
+    });
+    ctx.fillStyle = "rgba(255,255,255,.6)";
+    ctx.beginPath(); ctx.moveTo(-2,-19); ctx.lineTo(1,-6); ctx.lineTo(-2,1); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawMoonFlowers(x, y, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = "#67995d";
+    ctx.fillRect(-2, -18, 4, 18);
+    ctx.fillStyle = color;
+    for (let i = 0; i < 6; i++) {
+      const a = i * Math.PI * 2 / 6;
+      ctx.beginPath(); ctx.arc(Math.cos(a) * 8, -20 + Math.sin(a) * 8, 5, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = "#fff0a4";
+    ctx.beginPath(); ctx.arc(0, -20, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawTulip(x, y, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = "#56a24d";
+    ctx.fillRect(-2, -14, 4, 14);
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.moveTo(0, -24); ctx.lineTo(8, -14); ctx.lineTo(0, -10); ctx.lineTo(-8, -14); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawMiniPumpkin(x, y, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.ellipse(0, -8, 10, 8, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#6b8e42";
+    ctx.fillRect(-1.5, -20, 3, 8);
+    ctx.restore();
+  }
+
+  function drawDaisy(x, y, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = "#54a04c";
+    ctx.fillRect(-2, -18, 4, 18);
+    ctx.fillStyle = "white";
+    for (let i = 0; i < 8; i++) {
+      const a = i * Math.PI * 2 / 8;
+      ctx.beginPath(); ctx.ellipse(Math.cos(a) * 7, -22 + Math.sin(a) * 7, 5, 2.6, a, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(0, -22, 4.5, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawFernLeaf(x, y, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -20); ctx.stroke();
+    for (let i = 0; i < 4; i++) {
+      const yy = -5 - i * 4;
+      ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(8, yy - 3); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, yy - 1); ctx.lineTo(-8, yy - 4); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawSeaFlower(x, y, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(0, -12, 5, 0, Math.PI * 2); ctx.fill();
+    for (let i = 0; i < 5; i++) {
+      const a = i * Math.PI * 2 / 5;
+      ctx.beginPath(); ctx.ellipse(Math.cos(a) * 8, -12 + Math.sin(a) * 8, 5, 3, a, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawCrystalBud(x, y, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(8, -8); ctx.lineTo(0, 0); ctx.lineTo(-8, -8); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawNightBloom(x, y, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = color;
+    for (let i = 0; i < 6; i++) {
+      const a = i * Math.PI * 2 / 6;
+      ctx.beginPath(); ctx.ellipse(Math.cos(a) * 7, -15 + Math.sin(a) * 7, 5, 2.5, a, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = "#fff2a0";
+    ctx.beginPath(); ctx.arc(0, -15, 3.5, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawSmallButterfly(x, y, fairyIndex) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = fairies[fairyIndex].color;
+    ctx.beginPath(); ctx.ellipse(-6, 0, 7, 10, 0.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(6, 0, 7, 10, -0.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#5a436f";
+    ctx.fillRect(-1, -8, 2, 16);
+    ctx.restore();
+  }
+
+  function loop(now) {
+    const dt = Math.min(33, now - lastTime || 16.67);
+    lastTime = now;
+    update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  updateButtonLabels();
+  canvas.focus();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
