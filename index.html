@@ -2,14 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-<meta name="theme-color" content="#15142d" />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Rainbow Fairy Hunt" />
-<link rel="manifest" href="manifest.webmanifest" />
-<title>Rainbow Magic Fairy Hunt - Touch Edition</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rainbow Magic Fairy Hunt - Deluxe</title>
 <style>
   :root {
     color-scheme: dark;
@@ -100,191 +94,6 @@
     #uiBar { top: 8px; right: 8px; }
     .uiBtn { padding: 8px 11px; font-size: 12px; }
   }
-
-
-  /* Tablet / touchscreen controls */
-  #touchControls {
-    display: none;
-    min-width: 0;
-    align-items: center;
-    justify-content: space-between;
-    gap: 28px;
-    padding: 5px 28px 4px;
-    touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-  #touchStick {
-    --stick-x: 0px;
-    --stick-y: 0px;
-    width: 224px;
-    height: 224px;
-    flex: 0 0 224px;
-    position: relative;
-    border-radius: 50%;
-    touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
-    background:
-      radial-gradient(circle at 50% 50%, rgba(255,255,255,.08) 0 31%, transparent 32%),
-      radial-gradient(circle at 50% 50%, rgba(91,69,151,.93) 0 66%, rgba(31,25,74,.96) 67% 100%);
-    border: 2px solid rgba(255,255,255,.20);
-    box-shadow: inset 0 0 0 7px rgba(255,255,255,.035), 0 8px 24px rgba(0,0,0,.30);
-  }
-  .touchDir {
-    position: absolute;
-    width: 68px;
-    height: 68px;
-    min-height: 0;
-    padding: 0;
-    display: grid;
-    place-items: center;
-    border: 0;
-    border-radius: 22px;
-    background: rgba(255,255,255,.07);
-    color: rgba(255,255,255,.72);
-    font: 950 31px/1 system-ui, sans-serif;
-    pointer-events: none;
-    transition: background .08s ease, color .08s ease, transform .08s ease;
-  }
-  .touchDir.active {
-    background: rgba(255,225,118,.86);
-    color: #36265f;
-    transform: scale(1.05);
-  }
-  .touchDir.up { left: 78px; top: 8px; }
-  .touchDir.down { left: 78px; bottom: 8px; }
-  .touchDir.left { left: 8px; top: 78px; }
-  .touchDir.right { right: 8px; top: 78px; }
-  #touchKnob {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 82px;
-    height: 82px;
-    margin: -41px 0 0 -41px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    background: linear-gradient(160deg, #ff8fc5, #896eff 72%);
-    border: 3px solid rgba(255,255,255,.72);
-    color: white;
-    font-size: 36px;
-    box-shadow: 0 7px 20px rgba(0,0,0,.34), inset 0 2px 5px rgba(255,255,255,.34);
-    transform: translate(var(--stick-x), var(--stick-y));
-    transition: transform .09s ease-out;
-    pointer-events: none;
-    z-index: 3;
-  }
-  #touchStick.tracking #touchKnob { transition: none; }
-  .touchActions {
-    min-width: 0;
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 24px;
-  }
-  .touchAction {
-    appearance: none;
-    width: 112px;
-    height: 112px;
-    min-height: 112px;
-    padding: 0;
-    border-radius: 50%;
-    border: 2px solid rgba(255,255,255,.36);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    color: white;
-    background: linear-gradient(160deg, rgba(132,103,215,.98), rgba(67,50,137,.99));
-    box-shadow: 0 8px 24px rgba(0,0,0,.32), inset 0 2px rgba(255,255,255,.12);
-    touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-  .touchAction.jump {
-    width: 132px;
-    height: 132px;
-    min-height: 132px;
-    background: linear-gradient(160deg, #ff8ac1, #d94794 72%);
-    border-color: rgba(255,255,255,.64);
-  }
-  .touchAction strong { font-size: 30px; line-height: 1; }
-  .touchAction span { font-size: 11px; font-weight: 900; letter-spacing: .08em; }
-  .touchAction.jump strong { font-size: 39px; }
-  .touchAction.pressed { transform: scale(.95); filter: brightness(1.12); }
-
-  body.touch-capable {
-    height: 100vh;
-    height: 100dvh;
-    min-height: 0;
-    padding: 0;
-    place-items: stretch;
-    overscroll-behavior: none;
-  }
-  body.touch-capable #wrap {
-    width: 100%;
-    max-width: none;
-    height: 100vh;
-    height: 100dvh;
-    min-height: 0;
-    display: grid;
-    grid-template-rows: minmax(0, 1fr) auto;
-    gap: 4px;
-    padding: 4px max(4px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left));
-  }
-  body.touch-capable canvas {
-    grid-row: 1;
-    width: auto;
-    height: 100%;
-    max-width: 100%;
-    max-height: 100%;
-    justify-self: center;
-    align-self: center;
-    aspect-ratio: 16 / 9;
-    border-radius: 14px;
-    touch-action: none;
-  }
-  body.touch-capable #touchControls { display: flex; grid-row: 2; }
-  body.touch-capable #tip { display: none; }
-  body.touch-capable #uiBar { top: 8px; right: max(8px, env(safe-area-inset-right)); }
-
-  @media (max-height: 740px) {
-    body.touch-capable #touchControls { padding: 3px 18px 2px; gap: 18px; }
-    body.touch-capable #touchStick { width: 184px; height: 184px; flex-basis: 184px; }
-    body.touch-capable .touchDir { width: 58px; height: 58px; font-size: 27px; border-radius: 18px; }
-    body.touch-capable .touchDir.up { left: 63px; top: 5px; }
-    body.touch-capable .touchDir.down { left: 63px; bottom: 5px; }
-    body.touch-capable .touchDir.left { left: 5px; top: 63px; }
-    body.touch-capable .touchDir.right { right: 5px; top: 63px; }
-    body.touch-capable #touchKnob { width: 70px; height: 70px; margin: -35px 0 0 -35px; font-size: 31px; }
-    body.touch-capable .touchAction { width: 92px; height: 92px; min-height: 92px; }
-    body.touch-capable .touchAction.jump { width: 110px; height: 110px; min-height: 110px; }
-    body.touch-capable .touchAction strong { font-size: 25px; }
-    body.touch-capable .touchAction.jump strong { font-size: 34px; }
-    body.touch-capable .touchActions { gap: 16px; }
-  }
-  @media (max-width: 700px), (max-height: 590px) {
-    body.touch-capable #touchControls { padding: 2px 10px 0; gap: 12px; }
-    body.touch-capable #touchStick { width: 154px; height: 154px; flex-basis: 154px; }
-    body.touch-capable .touchDir { width: 48px; height: 48px; font-size: 22px; border-radius: 15px; }
-    body.touch-capable .touchDir.up { left: 53px; top: 4px; }
-    body.touch-capable .touchDir.down { left: 53px; bottom: 4px; }
-    body.touch-capable .touchDir.left { left: 4px; top: 53px; }
-    body.touch-capable .touchDir.right { right: 4px; top: 53px; }
-    body.touch-capable #touchKnob { width: 58px; height: 58px; margin: -29px 0 0 -29px; font-size: 26px; }
-    body.touch-capable .touchAction { width: 74px; height: 74px; min-height: 74px; }
-    body.touch-capable .touchAction.jump { width: 90px; height: 90px; min-height: 90px; }
-    body.touch-capable .touchAction strong { font-size: 20px; }
-    body.touch-capable .touchAction.jump strong { font-size: 28px; }
-    body.touch-capable .touchAction span { font-size: 9px; }
-    body.touch-capable .touchActions { gap: 10px; }
-    body.touch-capable .uiBtn { padding: 7px 9px; font-size: 11px; }
-  }
-
 </style>
 </head>
 <body>
@@ -297,21 +106,7 @@
   </div>
   <div id="tip">
     <span><strong>Keyboard</strong> - A/D move, Up/Down ladders, Space jump, P pause, F full screen, M sound, N music</span>
-    <span id="padStatus"><strong>Controller</strong> - press a button to connect your 8BitDo SN30 Pro - jump with B</span>
-  </div>
-
-  <div id="touchControls" aria-label="Touch controls">
-    <div id="touchStick" role="group" aria-label="Movement joystick">
-      <div class="touchDir up" data-dir="up" aria-hidden="true">▲</div>
-      <div class="touchDir left" data-dir="left" aria-hidden="true">◀</div>
-      <div class="touchDir right" data-dir="right" aria-hidden="true">▶</div>
-      <div class="touchDir down" data-dir="down" aria-hidden="true">▼</div>
-      <div id="touchKnob" aria-hidden="true">✦</div>
-    </div>
-    <div class="touchActions">
-      <button id="touchJumpBtn" class="touchAction jump" type="button" aria-label="Jump or confirm"><strong>★</strong><span>JUMP / OK</span></button>
-      <button id="touchPauseBtn" class="touchAction" type="button" aria-label="Pause or resume"><strong>Ⅱ</strong><span>PAUSE</span></button>
-    </div>
+    <span id="padStatus"><strong>Controller</strong> - B jump, X mount/dismount unicorn</span>
   </div>
 </div>
 <script>
@@ -325,17 +120,10 @@
   const soundBtn = document.getElementById("soundBtn");
   const musicBtn = document.getElementById("musicBtn");
   const fsBtn = document.getElementById("fsBtn");
-  const touchControls = document.getElementById("touchControls");
-  const touchStick = document.getElementById("touchStick");
-  const touchJumpBtn = document.getElementById("touchJumpBtn");
-  const touchPauseBtn = document.getElementById("touchPauseBtn");
-
-  const touchCapable = (navigator.maxTouchPoints || 0) > 0 || "ontouchstart" in window || matchMedia("(pointer: coarse)").matches;
-  if (touchCapable) document.body.classList.add("touch-capable");
 
   const W = canvas.width;
   const H = canvas.height;
-  const LEVEL_WIDTH = 5600;
+  const LEVEL_WIDTH = 8400;
   const GROUND_Y = 610;
   const keys = new Set();
   const keysPressed = new Set();
@@ -350,9 +138,19 @@
     { name: "Heather the Violet Fairy", short: "Heather", color: "#b55fdb", sky1: "#f0d9ff", sky2: "#bc7de0", land: "#8b57aa", theme: "Heather Moon Garden", accent: "#b04ed7" }
   ];
 
+  const RAINBOW_COLORS = [
+    { name: "Red", color: "#ef455e" },
+    { name: "Orange", color: "#ff9837" },
+    { name: "Yellow", color: "#ffe043" },
+    { name: "Green", color: "#49cb6e" },
+    { name: "Blue", color: "#54a8ff" },
+    { name: "Indigo", color: "#6f66ec" },
+    { name: "Violet", color: "#b55fdb" }
+  ];
+
   const characters = [
     {
-      name: "Kirsty",
+      name: "Rachel",
       hair: "#6c412b",
       hair2: "#8d5938",
       shirt: "#39c9ca",
@@ -368,7 +166,7 @@
       locket: false
     },
     {
-      name: "Rachael",
+      name: "Kirsty",
       hair: "#d09a53",
       hair2: "#efbb70",
       shirt: "#ff79b9",
@@ -415,14 +213,9 @@
     left: false,
     right: false,
     confirm: false,
-    fullscreen: false
+    fullscreen: false,
+    mount: false
   };
-
-  const touchInput = { left: false, right: false, up: false, down: false, jump: false, pause: false };
-  let previousTouch = { left: false, right: false, jump: false, pause: false };
-  let touchStickPointer = null;
-  const TOUCH_DEAD_ZONE = 0.12;
-  const TOUCH_AXIS_THRESHOLD = 0.28;
 
   function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
   function lerp(a, b, t) { return a + (b - a) * t; }
@@ -522,6 +315,21 @@
     } catch (_) {}
   }
 
+  function shoutYipee() {
+    if (!soundOn || !("speechSynthesis" in window)) return;
+    try {
+      const utterance = new SpeechSynthesisUtterance("Yipeeee!");
+      utterance.lang = "en-GB";
+      utterance.volume = 1.0;
+      utterance.rate = 1.18;
+      utterance.pitch = 1.72;
+      const voices = window.speechSynthesis.getVoices();
+      const preferred = voices.find(v => /^en/i.test(v.lang) && /female|samantha|serena|hazel|fiona|kate|victoria/i.test(v.name)) || voices.find(v => /^en/i.test(v.lang));
+      if (preferred) utterance.voice = preferred;
+      window.speechSynthesis.speak(utterance);
+    } catch (_) {}
+  }
+
   const songs = {
     title: {
       lead: [523, 659, 784, 659, 698, 784, 880, 784, 784, 988, 1047, 988, 880, 784, 698, 659],
@@ -564,7 +372,7 @@
   function getSongName() {
     if (state === "title" || state === "select" || state === "victory") return "title";
     if (state === "playing" || state === "levelcomplete" || state === "gameover") {
-      if (level && level.boss && level.boss.alive && player && player.x > 4200) return "boss";
+      if (level && level.boss && level.boss.alive && player && player.x > level.boss.arenaLeft - 260) return "boss";
       return ["red", "orange", "yellow", "green", "blue", "indigo", "violet"][currentLevel] || "title";
     }
     return "title";
@@ -615,31 +423,10 @@
     }
   }
 
-  function isStandaloneDisplay() {
-    return window.matchMedia?.("(display-mode: fullscreen)").matches ||
-      window.matchMedia?.("(display-mode: standalone)").matches ||
-      window.navigator.standalone === true;
-  }
-
-  function requestPreferredFullscreen() {
-    if (document.fullscreenElement || isStandaloneDisplay()) return;
-    const request = wrap.requestFullscreen || wrap.webkitRequestFullscreen;
-    if (!request) return;
-    try {
-      const result = request.call(wrap);
-      if (result && typeof result.catch === "function") result.catch(() => {});
-    } catch (_) {}
-  }
-
   async function toggleFullscreen() {
     try {
-      if (!document.fullscreenElement) {
-        const request = wrap.requestFullscreen || wrap.webkitRequestFullscreen;
-        if (request) await request.call(wrap);
-      } else {
-        const exit = document.exitFullscreen || document.webkitExitFullscreen;
-        if (exit) await exit.call(document);
-      }
+      if (!document.fullscreenElement) await wrap.requestFullscreen();
+      else await document.exitFullscreen();
     } catch (_) {}
     updateButtonLabels();
     canvas.focus();
@@ -647,104 +434,132 @@
 
   function makeLevel(index) {
     const f = fairies[index];
-    const grounds = [
-      { x: 0, y: GROUND_Y, w: 920, h: 160 },
-      { x: 1050, y: GROUND_Y, w: 840, h: 160 },
-      { x: 2000, y: GROUND_Y, w: 820, h: 160 },
-      { x: 2940, y: GROUND_Y, w: 760, h: 160 },
-      { x: 3800, y: GROUND_Y, w: 1800, h: 160 }
+    const gapSets = [
+      [[930,1060],[1810,1940],[2860,2995],[4130,4250],[5420,5550],[6520,6650]],
+      [[760,900],[1610,1740],[2500,2650],[3550,3665],[4780,4925],[6160,6300]],
+      [[1080,1200],[2180,2310],[3360,3480],[4460,4605],[5660,5790],[6620,6750]],
+      [[880,1005],[1980,2100],[3060,3205],[4330,4455],[5260,5395],[6420,6550]],
+      [[690,835],[1510,1670],[2590,2740],[3790,3945],[5040,5200],[6250,6405]],
+      [[1020,1140],[1890,2030],[3180,3320],[4270,4410],[5550,5690],[6480,6620]],
+      [[820,950],[1760,1900],[2700,2845],[3980,4110],[5200,5350],[6340,6480]]
     ];
+    const gaps = gapSets[index];
+    const grounds = [];
+    let cursor = 0;
+    for (const [a,b] of gaps) {
+      if (a > cursor) grounds.push({ x: cursor, y: GROUND_Y, w: a - cursor, h: 160 });
+      cursor = b;
+    }
+    grounds.push({ x: cursor, y: GROUND_Y, w: LEVEL_WIDTH - cursor, h: 160 });
 
-    const lift = [0, 10, 25, 8, 16, 28, 12][index];
-    const platforms = [
-      ...grounds,
-      { x: 330, y: 485 - lift, w: 210, h: 24 },
-      { x: 630, y: 420 + lift * 0.2, w: 175, h: 24 },
-      { x: 1100, y: 500 - lift * 0.15, w: 190, h: 24 },
-      { x: 1390, y: 430 - lift * 0.15, w: 180, h: 24 },
-      { x: 1670, y: 500, w: 160, h: 24 },
-      { x: 2050, y: 470 - lift * 0.25, w: 180, h: 24 },
-      { x: 2330, y: 395 + lift * 0.15, w: 225, h: 24 },
-      { x: 2620, y: 500, w: 150, h: 24 },
-      { x: 3000, y: 480 - lift * 0.2, w: 180, h: 24 },
-      { x: 3270, y: 405 + lift * 0.1, w: 205, h: 24 },
-      { x: 3550, y: 500, w: 120, h: 24 },
-      { x: 3920, y: 470, w: 190, h: 24 },
-      { x: 4210, y: 395, w: 180, h: 24 },
-      { x: 4800, y: 455, w: 220, h: 24 }
+    const patterns = [
+      [[495,420,365,470,410,500],[455,385,500,350,430,475],[500,440,375,420,330,485]],
+      [[470,395,455,340,500,420],[500,360,430,475,390,335],[445,500,380,350,470,410]],
+      [[500,430,355,405,470,330],[390,345,500,425,365,455],[475,405,335,500,385,445]],
+      [[475,360,430,500,385,340],[410,335,470,390,500,355],[500,430,350,405,330,475]],
+      [[500,415,355,470,390,330],[455,350,500,405,335,470],[385,500,340,445,370,490]],
+      [[430,345,500,375,455,325],[490,410,335,465,360,500],[365,450,320,500,405,350]],
+      [[500,370,425,330,475,395],[445,320,500,365,410,340],[390,470,335,500,355,430]]
     ];
+    const widths = [190,155,210,145,180,220,165];
+    const platforms = [...grounds];
+    let px = 300;
+    let seq = 0;
+    while (px < 6900) {
+      const zone = Math.min(2, Math.floor(px / 2300));
+      const pat = patterns[index][zone];
+      const y = pat[seq % pat.length];
+      const w = widths[(seq + index * 2 + zone) % widths.length];
+      const center = px + w / 2;
+      const overGround = grounds.some(g => center >= g.x + 20 && center <= g.x + g.w - 20);
+      platforms.push({ x: px, y, w, h: 24, ladderCandidate: overGround && seq % (index % 2 ? 5 : 4) === 1 });
+      px += 275 + ((seq * 47 + index * 31) % 105);
+      seq++;
+    }
 
-    const enemyXs = [520, 760, 1180, 1500, 1750, 2130, 2440, 3040, 3360, 3930, 4250];
-    const enemies = enemyXs.map((x, i) => {
-      const p = findGroundPlatformAt(platforms, x, GROUND_Y + 10);
-      return {
-        x,
-        y: p.y - 48,
-        w: 44,
-        h: 48,
-        vx: (i % 2 ? -1 : 1) * (1.1 + index * 0.06),
-        left: x - 85,
-        right: x + 85,
-        alive: true,
-        bob: i * 0.8,
-        blink: i * 11,
-        mood: i % 2 === 0 ? "grumpy" : "sneaky"
-      };
+    const movingStyles = ["cloud","leaf","flower","star"];
+    const movingPlatforms = [];
+    const movingXs = [1180, 2460, 3610, 4950, 6260];
+    movingXs.forEach((x,i) => {
+      movingPlatforms.push({
+        x, y: 360 + ((i * 57 + index * 33) % 130), baseX: x, baseY: 360 + ((i * 57 + index * 33) % 130),
+        w: 132 + (i % 2) * 16, h: 22, ampX: 55 + ((i + index) % 3) * 28, ampY: 10 + (i % 3) * 7,
+        speed: 0.0095 + index * 0.00045 + i * 0.00035, phase: i * 0.9 + index * 0.25,
+        dx: 0, dy: 0, style: movingStyles[(i + index) % movingStyles.length]
+      });
     });
 
-    const gemXs = [250, 420, 695, 1135, 1445, 1740, 2100, 2385, 2670, 3040, 3330, 3570, 3960, 4245, 4520, 4870, 5230];
-    const gems = gemXs.map((x, i) => ({
-      x,
-      y: i % 3 === 0 ? 395 : (i % 3 === 1 ? 505 : 455),
-      collected: false,
-      phase: i * 0.55,
-      color: fairies[(index + i) % fairies.length].color
+    const springXsByLevel = [
+      [560,1320,2280,3180,4490,5350,6200,6800],
+      [430,1210,2120,3020,4140,5080,5920,6710],
+      [610,1430,2360,3260,4380,5230,6070,6810],
+      [500,1260,2190,3490,4520,5480,6150,6770],
+      [420,1370,2250,3450,4680,5520,6120,6740],
+      [590,1510,2410,3420,4310,5190,6030,6790],
+      [470,1280,2330,3300,4470,5410,6190,6820]
+    ];
+    const springStyles = ["mushroom","flower","mushroom","flower","mushroom","flower","mushroom","flower"];
+    const springs = springXsByLevel[index].map((x,i) => ({
+      x, y: GROUND_Y - 16, w: 48, h: 16,
+      boost: springStyles[i] === "mushroom" ? 25.5 + (i % 2) : 21.5 + (i % 3) * 0.5,
+      style: springStyles[(i + index) % springStyles.length], pulse: 0
     }));
 
-    const movingPlatforms = [
-      { x: 925, y: 468, baseX: 925, baseY: 468, w: 138, h: 22, ampX: 72, ampY: 12, speed: 0.012 + index * 0.0006, phase: 0.3, dx: 0, dy: 0, style: index % 2 === 0 ? "cloud" : "leaf" },
-      { x: 1888, y: 404, baseX: 1888, baseY: 404, w: 132, h: 22, ampX: 80, ampY: 18, speed: 0.0105 + index * 0.0005, phase: 1.4, dx: 0, dy: 0, style: index % 3 === 0 ? "flower" : "cloud" },
-      { x: 3725, y: 430, baseX: 3725, baseY: 430, w: 145, h: 22, ampX: 90, ampY: 10, speed: 0.011 + index * 0.0004, phase: 2.2, dx: 0, dy: 0, style: index >= 4 ? "star" : "leaf" }
-    ];
+    const ladderPlatforms = platforms.filter(p => p.h === 24 && p.ladderCandidate).slice(0, 7);
+    const ladders = ladderPlatforms.map((p,i) => ({
+      id: i,
+      x: p.x + p.w * (i % 2 ? 0.7 : 0.3) - 17,
+      topY: p.y + 1,
+      bottomY: GROUND_Y,
+      w: 34,
+      platformLeft: p.x + 8,
+      platformRight: p.x + p.w - 52
+    }));
 
-    const springs = [
-      { x: 565, y: GROUND_Y - 16, w: 44, h: 16, boost: index % 2 === 0 ? 21.0 : 25.0, style: index % 2 === 0 ? "flower" : "mushroom", pulse: 0 },
-      { x: 2265, y: GROUND_Y - 16, w: 44, h: 16, boost: index >= 3 ? 21.5 : 25.5, style: index >= 3 ? "flower" : "mushroom", pulse: 0 },
-      { x: 4075, y: GROUND_Y - 16, w: 44, h: 16, boost: 22.5, style: index >= 5 ? "star" : "flower", pulse: 0 }
-    ];
-
-    const ladders = [
-      { id: 0, x: 452, topY: platforms[5].y + 1, bottomY: GROUND_Y, w: 34, platformLeft: platforms[5].x + 8, platformRight: platforms[5].x + platforms[5].w - 52 },
-      { id: 1, x: 1460, topY: platforms[8].y + 1, bottomY: GROUND_Y, w: 34, platformLeft: platforms[8].x + 8, platformRight: platforms[8].x + platforms[8].w - 52 },
-      { id: 2, x: 2415, topY: platforms[11].y + 1, bottomY: GROUND_Y, w: 34, platformLeft: platforms[11].x + 8, platformRight: platforms[11].x + platforms[11].w - 52 },
-      { id: 3, x: 3350, topY: platforms[14].y + 1, bottomY: GROUND_Y, w: 34, platformLeft: platforms[14].x + 8, platformRight: platforms[14].x + platforms[14].w - 52 },
-      { id: 4, x: 4280, topY: platforms[17].y + 1, bottomY: GROUND_Y, w: 34, platformLeft: platforms[17].x + 8, platformRight: platforms[17].x + platforms[17].w - 52 }
-    ];
-
-    const bonusStarSpots = [
-      { x: 735, y: platforms[6].y - 44 },
-      { x: 1510, y: platforms[8].y - 46 },
-      { x: 2475, y: platforms[11].y - 48 },
-      { x: 3400, y: platforms[14].y - 48 },
-      { x: 4325, y: platforms[17].y - 48 }
-    ];
-    const starSpot = bonusStarSpots[(index + 2) % bonusStarSpots.length];
-    const bonusStar = { x: starSpot.x, y: starSpot.y, collected: false, phase: index * 0.8 };
-
-    const ladderEnemyMap = [0, 3, 6, 8, 10];
-    ladderEnemyMap.forEach((enemyIndex, ladderIndex) => {
-      const e = enemies[enemyIndex];
-      const lad = ladders[ladderIndex];
-      if (!e || !lad) return;
-      e.ladderId = ladderIndex;
+    const enemyXs = [];
+    for (let x = 520, i = 0; x < 6900; x += 390 + ((i * 37 + index * 29) % 100), i++) {
+      if (grounds.some(g => x >= g.x + 35 && x <= g.x + g.w - 35)) enemyXs.push(x);
+    }
+    const enemies = enemyXs.map((x,i) => ({
+      x, y: GROUND_Y - 48, w: 44, h: 48,
+      vx: (i % 2 ? -1 : 1) * (1.05 + index * 0.055),
+      left: x - 90, right: x + 90, alive: true, bob: i * 0.8, blink: i * 11,
+      mood: i % 3 === 0 ? "grumpy" : "sneaky"
+    }));
+    ladders.forEach((ladder,i) => {
+      const e = enemies[i * 2 + 1];
+      if (!e) return;
+      e.ladderId = i;
       e.mode = "ground";
       e.climbDir = -1;
-      e.climbCooldown = 70 + ladderIndex * 25;
-      e.baseLeft = lad.x - 72;
-      e.baseRight = lad.x + 72;
+      e.climbCooldown = 70 + i * 22;
+      e.baseLeft = ladder.x - 78;
+      e.baseRight = ladder.x + 78;
       e.left = e.baseLeft;
       e.right = e.baseRight;
+      e.x = ladder.x + ladder.w / 2 - e.w / 2 + (i % 2 ? 30 : -30);
     });
+
+    const gems = [];
+    for (let i = 0; i < 21; i++) {
+      const x = 330 + i * 310 + ((i * 41 + index * 37) % 85);
+      const ci = i % 7;
+      gems.push({
+        x,
+        y: [500,430,365,485,405,350,455][(i + index) % 7],
+        collected: false,
+        phase: i * 0.53,
+        color: RAINBOW_COLORS[ci].color,
+        colorIndex: ci
+      });
+    }
+
+    const starPlatform = platforms.filter(p => p.h === 24 && p.x > 2500 && p.x < 6000).sort((a,b) => a.y - b.y)[index % Math.max(1, platforms.filter(p => p.h === 24 && p.x > 2500 && p.x < 6000).length)];
+    const bonusStar = starPlatform ? { x: starPlatform.x + starPlatform.w / 2, y: starPlatform.y - 48, collected: false, phase: index * 0.8 } : { x: 4200, y: 350, collected: false, phase: index * 0.8 };
+
+    const bossArenaLeft = 7150;
+    const bossArenaRight = 7920;
+    const fairyX = 8170;
 
     return {
       index,
@@ -757,9 +572,23 @@
       ladderTipShown: false,
       enemies,
       gems,
+      rainbowCollected: new Set(),
       projectiles: [],
+      unicorn: {
+        unlocked: false,
+        mounted: false,
+        x: 0,
+        y: GROUND_Y,
+        w: 94,
+        h: 66,
+        facing: 1,
+        phase: 0,
+        spinTimer: 0,
+        spinTotal: 180,
+        yipeeSpoken: false
+      },
       boss: {
-        x: 4540,
+        x: 7440,
         y: GROUND_Y - 114,
         w: 90,
         h: 114,
@@ -769,8 +598,8 @@
         maxHp: 3,
         alive: true,
         onGround: true,
-        arenaLeft: 4360,
-        arenaRight: 4900,
+        arenaLeft: bossArenaLeft,
+        arenaRight: bossArenaRight,
         attackTimer: 80,
         jumpTimer: 125,
         dashTimer: 180,
@@ -782,6 +611,7 @@
         phase: 1,
         scaredTimer: 0
       },
+      fairyX,
       fairyFound: false,
       bossIntroduced: false,
       checkpoint: 120
@@ -796,6 +626,91 @@
       }
     }
     return best;
+  }
+
+  function groundYAtX(x) {
+    if (!level || !level.platforms) return GROUND_Y;
+    const grounds = level.platforms.filter(p => p.h > 40 && x >= p.x && x <= p.x + p.w);
+    if (!grounds.length) return GROUND_Y;
+    return Math.min(...grounds.map(g => g.y));
+  }
+
+  function safeGroundX(x) {
+    if (!level || !level.platforms) return clamp(x, 50, LEVEL_WIDTH - 80);
+    const grounds = level.platforms.filter(p => p.h > 40);
+    const clamped = clamp(x, 50, LEVEL_WIDTH - 80);
+    const onGround = grounds.find(g => clamped >= g.x + 35 && clamped <= g.x + g.w - 35);
+    if (onGround) return clamped;
+    let bestX = clamped;
+    let bestDist = Infinity;
+    for (const g of grounds) {
+      const candidate = clamp(clamped, g.x + 45, g.x + g.w - 45);
+      const d = Math.abs(candidate - clamped);
+      if (d < bestDist) { bestDist = d; bestX = candidate; }
+    }
+    return bestX;
+  }
+
+  function updateUnicorn(s) {
+    if (!level || !level.unicorn) return;
+    const u = level.unicorn;
+    u.phase += 0.05 * s;
+    if (u.mounted) {
+      u.x = player.x + player.w / 2;
+      u.y = player.y + player.h;
+      u.facing = player.facing;
+    }
+    if (u.spinTimer > 0) {
+      u.spinTimer = Math.max(0, u.spinTimer - s);
+      if (!u.yipeeSpoken && u.spinTimer < u.spinTotal - 10) {
+        u.yipeeSpoken = true;
+        comicBursts.push({ x: u.mounted ? player.x + player.w / 2 : u.x, y: (u.mounted ? player.y : u.y - 80), text: "YIPEEEE!", life: 100, vy: -0.35 });
+        shoutYipee();
+      }
+    }
+  }
+
+  function unlockUnicorn() {
+    const u = level.unicorn;
+    if (u.unlocked) return;
+    u.unlocked = true;
+    u.mounted = false;
+    u.x = safeGroundX(clamp(player.x + 170, 120, level.boss.arenaLeft - 220));
+    u.y = groundYAtX(u.x);
+    u.facing = -1;
+    message = "All 7 rainbow jewels! Magic Unicorn appeared - press X / E to ride!";
+    messageTimer = 260;
+    jingle();
+  }
+
+  function toggleUnicornMount() {
+    const u = level.unicorn;
+    if (!u.unlocked) return;
+    if (player.onUnicorn) {
+      player.onUnicorn = false;
+      u.mounted = false;
+      u.x = safeGroundX(clamp(player.x + player.facing * 90, 50, LEVEL_WIDTH - 80));
+      u.y = groundYAtX(u.x);
+      u.facing = player.facing;
+      message = "Magic Unicorn waiting here.";
+      messageTimer = 80;
+      return;
+    }
+    const dx = (player.x + player.w / 2) - u.x;
+    const dy = (player.y + player.h) - u.y;
+    if (Math.hypot(dx, dy) <= 145) {
+      player.onUnicorn = true;
+      player.climbing = false;
+      player.ladderId = null;
+      u.mounted = true;
+      u.facing = player.facing;
+      playSfx(720, 0.1, "triangle", 0.028, 160);
+      message = "Giddy up! X / E to dismount.";
+      messageTimer = 110;
+    } else {
+      message = "Move closer to the Magic Unicorn to mount.";
+      messageTimer = 90;
+    }
   }
 
   function createPlayer() {
@@ -822,7 +737,8 @@
       launchStretch: 0,
       wasOnGround: false,
       platformCarryVx: 0,
-      platformCarryVy: 0
+      platformCarryVy: 0,
+      onUnicorn: false
     };
   }
 
@@ -848,6 +764,12 @@
     player.vx = 0;
     player.vy = 0;
     player.invuln = 120;
+    if (player.onUnicorn && level.unicorn) {
+      player.onUnicorn = false;
+      level.unicorn.mounted = false;
+      level.unicorn.x = player.x + 100;
+      level.unicorn.y = GROUND_Y;
+    }
     cameraX = clamp(player.x - W * 0.35, 0, LEVEL_WIDTH - W);
   }
 
@@ -882,18 +804,26 @@
     });
   }
 
-  function hitBoss() {
+  function hitBoss(source = "stomp") {
     const b = level.boss;
-    if (!b.alive || b.invuln > 0) return;
+    if (!b.alive || b.invuln > 0) return false;
     b.hp--;
-    b.invuln = 52;
+    b.invuln = source === "horn" ? 64 : 52;
     b.phase = b.hp <= 2 ? 2 : 1;
     b.scaredTimer = 45;
-    player.vy = -12.2;
-    player.vx = player.x < b.x ? -4.3 : 4.3;
-    screenShake = 18;
-    score += 500;
-    playSfx(260, 0.09, "square", 0.04, 220);
+    if (source === "horn") {
+      player.vx *= -0.35;
+      screenShake = 20;
+      score += 650;
+      comicBursts.push({ x: b.x + b.w / 2, y: b.y + 12, text: "BONK!", life: 55, vy: -0.25 });
+      playSfx(330, 0.1, "square", 0.045, 260);
+    } else {
+      player.vy = -12.2;
+      player.vx = player.x < b.x ? -4.3 : 4.3;
+      screenShake = 18;
+      score += 500;
+      playSfx(260, 0.09, "square", 0.04, 220);
+    }
     if (b.hp <= 0) {
       b.alive = false;
       level.projectiles.length = 0;
@@ -902,16 +832,21 @@
       message = `${level.fairy.short} is free!`;
       messageTimer = 220;
       setTimeout(shoutWooHoo, 110);
+      if (level.unicorn.unlocked) {
+        level.unicorn.spinTimer = level.unicorn.spinTotal;
+        level.unicorn.yipeeSpoken = false;
+      }
       jingle();
     }
+    return true;
   }
 
   function getInput() {
-    let left = keys.has("ArrowLeft") || keys.has("KeyA") || touchInput.left;
-    let right = keys.has("ArrowRight") || keys.has("KeyD") || touchInput.right;
-    let up = keys.has("ArrowUp") || keys.has("KeyW") || touchInput.up;
-    let down = keys.has("ArrowDown") || keys.has("KeyS") || touchInput.down;
-    let jumpHeld = keys.has("Space") || keys.has("KeyZ") || touchInput.jump;
+    let left = keys.has("ArrowLeft") || keys.has("KeyA");
+    let right = keys.has("ArrowRight") || keys.has("KeyD");
+    let up = keys.has("ArrowUp") || keys.has("KeyW");
+    let down = keys.has("ArrowDown") || keys.has("KeyS");
+    let jumpHeld = keys.has("Space") || keys.has("KeyZ");
     let padJump = false;
     let padStart = false;
     let padConfirm = false;
@@ -920,12 +855,13 @@
     let padUp = false;
     let padDown = false;
     let padFs = false;
+    let padMount = false;
 
     const pads = navigator.getGamepads ? navigator.getGamepads() : [];
     const gp = Array.from(pads || []).find(Boolean);
     if (gp) {
       gamepadName = gp.id || "Gamepad";
-      padStatus.innerHTML = `<strong>Controller</strong> - ${gamepadName.slice(0, 34)} | Jump with B`;
+      padStatus.innerHTML = `<strong>Controller</strong> - ${gamepadName.slice(0, 30)} | B jump | X unicorn`;
       const ax = Math.abs(gp.axes[0] || 0) > 0.18 ? gp.axes[0] : 0;
       const ay = Math.abs(gp.axes[1] || 0) > 0.18 ? gp.axes[1] : 0;
       padLeft = ax < -0.25 || !!gp.buttons[14]?.pressed;
@@ -934,6 +870,7 @@
       padDown = ay > 0.30 || !!gp.buttons[13]?.pressed;
       padJump = !!gp.buttons[0]?.pressed || !!gp.buttons[1]?.pressed;
       padConfirm = !!gp.buttons[0]?.pressed || !!gp.buttons[1]?.pressed;
+      padMount = !!gp.buttons[2]?.pressed;
       padStart = !!gp.buttons[9]?.pressed;
       padFs = !!gp.buttons[8]?.pressed;
       left ||= padLeft;
@@ -943,124 +880,17 @@
       jumpHeld ||= padJump;
     }
 
-    const touchJumpPressed = touchInput.jump && !previousTouch.jump;
-    const touchPausePressed = touchInput.pause && !previousTouch.pause;
-    const touchLeftPressed = touchInput.left && !previousTouch.left;
-    const touchRightPressed = touchInput.right && !previousTouch.right;
-    const jumpPressed = (keysPressed.has("Space") || keysPressed.has("KeyZ")) || (padJump && !previousPad.jump) || touchJumpPressed;
-    const confirmPressed = keysPressed.has("Enter") || (padConfirm && !previousPad.confirm) || touchJumpPressed;
-    const startPressed = keysPressed.has("KeyP") || (padStart && !previousPad.start) || touchPausePressed;
-    const menuLeftPressed = keysPressed.has("ArrowLeft") || keysPressed.has("KeyA") || (padLeft && !previousPad.left) || touchLeftPressed;
-    const menuRightPressed = keysPressed.has("ArrowRight") || keysPressed.has("KeyD") || (padRight && !previousPad.right) || touchRightPressed;
+    const jumpPressed = (keysPressed.has("Space") || keysPressed.has("KeyZ")) || (padJump && !previousPad.jump);
+    const mountPressed = keysPressed.has("KeyE") || (padMount && !previousPad.mount);
+    const confirmPressed = keysPressed.has("Enter") || (padConfirm && !previousPad.confirm);
+    const startPressed = keysPressed.has("KeyP") || (padStart && !previousPad.start);
+    const menuLeftPressed = keysPressed.has("ArrowLeft") || keysPressed.has("KeyA") || (padLeft && !previousPad.left);
+    const menuRightPressed = keysPressed.has("ArrowRight") || keysPressed.has("KeyD") || (padRight && !previousPad.right);
     const fullscreenPressed = keysPressed.has("KeyF") || (padFs && !previousPad.fullscreen);
 
-    previousPad = { jump: padJump, start: padStart, left: padLeft, right: padRight, confirm: padConfirm, fullscreen: padFs };
-    previousTouch = { left: touchInput.left, right: touchInput.right, jump: touchInput.jump, pause: touchInput.pause };
-    return { left, right, up, down, jumpHeld, jumpPressed, confirmPressed, startPressed, menuLeftPressed, menuRightPressed, fullscreenPressed };
+    previousPad = { jump: padJump, start: padStart, left: padLeft, right: padRight, confirm: padConfirm, fullscreen: padFs, mount: padMount };
+    return { left, right, up, down, jumpHeld, jumpPressed, mountPressed, confirmPressed, startPressed, menuLeftPressed, menuRightPressed, fullscreenPressed };
   }
-
-
-
-  function resetTouchStick() {
-    touchInput.left = false;
-    touchInput.right = false;
-    touchInput.up = false;
-    touchInput.down = false;
-    if (!touchStick) return;
-    touchStick.classList.remove("tracking");
-    touchStick.style.setProperty("--stick-x", "0px");
-    touchStick.style.setProperty("--stick-y", "0px");
-    touchStick.querySelectorAll(".touchDir").forEach(el => el.classList.remove("active"));
-  }
-
-  function updateTouchStick(clientX, clientY) {
-    if (!touchStick) return;
-    const r = touchStick.getBoundingClientRect();
-    const cx = r.left + r.width / 2;
-    const cy = r.top + r.height / 2;
-    const rawX = clientX - cx;
-    const rawY = clientY - cy;
-    const radius = Math.max(1, Math.min(r.width, r.height) / 2);
-    const nx = rawX / radius;
-    const ny = rawY / radius;
-    const magnitude = Math.hypot(nx, ny);
-    const maxKnob = Math.min(r.width, r.height) * 0.28;
-    const rawMagnitude = Math.hypot(rawX, rawY);
-    const knobScale = rawMagnitude > 0 ? Math.min(1, maxKnob / rawMagnitude) : 0;
-    touchStick.style.setProperty("--stick-x", `${(rawX * knobScale).toFixed(1)}px`);
-    touchStick.style.setProperty("--stick-y", `${(rawY * knobScale).toFixed(1)}px`);
-
-    if (magnitude < TOUCH_DEAD_ZONE) {
-      touchInput.left = touchInput.right = touchInput.up = touchInput.down = false;
-    } else {
-      touchInput.left = nx < -TOUCH_AXIS_THRESHOLD;
-      touchInput.right = nx > TOUCH_AXIS_THRESHOLD;
-      touchInput.up = ny < -TOUCH_AXIS_THRESHOLD;
-      touchInput.down = ny > TOUCH_AXIS_THRESHOLD;
-    }
-    touchStick.querySelectorAll(".touchDir").forEach(el => {
-      el.classList.toggle("active", !!touchInput[el.dataset.dir]);
-    });
-  }
-
-  if (touchStick) {
-    touchStick.addEventListener("pointerdown", (e) => {
-      if (!touchCapable && e.pointerType === "mouse") return;
-      e.preventDefault();
-      initAudio();
-      requestPreferredFullscreen();
-      touchStickPointer = e.pointerId;
-      touchStick.classList.add("tracking");
-      try { touchStick.setPointerCapture(e.pointerId); } catch (_) {}
-      updateTouchStick(e.clientX, e.clientY);
-    });
-    touchStick.addEventListener("pointermove", (e) => {
-      if (e.pointerId !== touchStickPointer) return;
-      e.preventDefault();
-      updateTouchStick(e.clientX, e.clientY);
-    });
-    const endTouchStick = (e) => {
-      if (e.pointerId !== touchStickPointer) return;
-      e.preventDefault();
-      touchStickPointer = null;
-      resetTouchStick();
-    };
-    touchStick.addEventListener("pointerup", endTouchStick);
-    touchStick.addEventListener("pointercancel", endTouchStick);
-    touchStick.addEventListener("lostpointercapture", () => {
-      touchStickPointer = null;
-      resetTouchStick();
-    });
-  }
-
-  function bindTouchButton(button, key) {
-    if (!button) return;
-    let pointerId = null;
-    button.addEventListener("pointerdown", (e) => {
-      if (!touchCapable && e.pointerType === "mouse") return;
-      e.preventDefault();
-      initAudio();
-      requestPreferredFullscreen();
-      pointerId = e.pointerId;
-      touchInput[key] = true;
-      button.classList.add("pressed");
-      try { button.setPointerCapture(e.pointerId); } catch (_) {}
-      canvas.focus();
-    });
-    const release = (e) => {
-      if (pointerId !== null && e && e.pointerId !== pointerId) return;
-      pointerId = null;
-      touchInput[key] = false;
-      button.classList.remove("pressed");
-    };
-    button.addEventListener("pointerup", release);
-    button.addEventListener("pointercancel", release);
-    button.addEventListener("lostpointercapture", release);
-  }
-
-  bindTouchButton(touchJumpBtn, "jump");
-  bindTouchButton(touchPauseBtn, "pause");
-
 
   addEventListener("keydown", (e) => {
     if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"].includes(e.code)) e.preventDefault();
@@ -1073,11 +903,11 @@
   addEventListener("keyup", (e) => keys.delete(e.code));
   addEventListener("gamepadconnected", (e) => {
     gamepadName = e.gamepad.id || "Gamepad";
-    padStatus.innerHTML = `<strong>Controller</strong> - ${gamepadName.slice(0, 34)} | Jump with B`;
+    padStatus.innerHTML = `<strong>Controller</strong> - ${gamepadName.slice(0, 30)} | B jump | X unicorn`;
   });
   addEventListener("gamepaddisconnected", () => {
     gamepadName = "";
-    padStatus.innerHTML = "<strong>Controller</strong> - press a button to connect your 8BitDo SN30 Pro - jump with B";
+    padStatus.innerHTML = "<strong>Controller</strong> - B jump | X mount/dismount unicorn";
   });
   document.addEventListener("fullscreenchange", updateButtonLabels);
 
@@ -1087,7 +917,6 @@
 
   canvas.addEventListener("pointerdown", (e) => {
     initAudio();
-    if (touchCapable) requestPreferredFullscreen();
     const r = canvas.getBoundingClientRect();
     const x = (e.clientX - r.left) * W / r.width;
     const y = (e.clientY - r.top) * H / r.height;
@@ -1202,108 +1031,120 @@
     player.prevY = player.y;
     player.wasOnGround = player.onGround;
     player.blink += 0.06 * speedScale;
-    player.landSquash = Math.max(0, player.landSquash - 0.09 * speedScale);
-    player.launchStretch = Math.max(0, player.launchStretch - 0.075 * speedScale);
-    for (const sp of level.springs) sp.pulse = Math.max(0, (sp.pulse || 0) - 0.055 * speedScale);
-    updateMovingPlatforms(speedScale);
+    player.landSquash = Math.max(0, player.landSquash - 0.085 * speedScale);
+    player.launchStretch = Math.max(0, player.launchStretch - 0.045 * speedScale);
     updateComicBursts(speedScale);
+    updateMovingPlatforms(speedScale);
+    updateUnicorn(speedScale);
+    for (const sp of level.springs) sp.pulse = Math.max(0, (sp.pulse || 0) - 0.055 * speedScale);
     if (player.invuln > 0) player.invuln -= speedScale;
     if (level.boss.invuln > 0) level.boss.invuln -= speedScale;
     if (level.boss.scaredTimer > 0) level.boss.scaredTimer -= speedScale;
     if (messageTimer > 0) messageTimer -= speedScale;
     if (screenShake > 0) screenShake -= speedScale;
 
+    if (input.mountPressed && level.unicorn.unlocked && level.unicorn.spinTimer <= 0) toggleUnicornMount();
+
     if (input.jumpPressed) player.jumpBuffer = 9;
     else player.jumpBuffer = Math.max(0, player.jumpBuffer - speedScale);
-
     if (player.onGround) player.coyote = 8;
     else player.coyote = Math.max(0, player.coyote - speedScale);
 
-    const nearbyLadder = ladderForEntity(player);
-    if (!player.climbing && nearbyLadder && (input.up || input.down)) {
-      player.climbing = true;
-      player.ladderId = nearbyLadder.id;
-      player.vx = 0;
-      player.vy = 0;
-      player.onGround = false;
-      if (!level.ladderTipShown) {
-        level.ladderTipShown = true;
-        message = "Ladders! Use Up / Down. Watch out - goblins use them too!";
-        messageTimer = 210;
-      }
-    }
-
-    if (player.climbing) {
-      const ladder = level.ladders[player.ladderId];
-      if (!ladder) {
-        player.climbing = false;
-      } else {
-        const ladderCenterX = ladder.x + ladder.w / 2 - player.w / 2;
-        player.x = lerp(player.x, ladderCenterX, 0.28 * speedScale);
-        const climbDir = (input.down ? 1 : 0) - (input.up ? 1 : 0);
-        player.vy = climbDir * 4.0;
-        player.y += player.vy * speedScale;
-        player.runPhase += Math.abs(climbDir) * 0.13 * speedScale;
-        const topY = ladder.topY - player.h;
-        const bottomY = ladder.bottomY - player.h;
-        player.y = clamp(player.y, topY, bottomY);
-
-        if (input.jumpPressed) {
-          player.climbing = false;
-          player.ladderId = null;
-          player.vy = -11.5;
-          player.vx = player.facing * 3.0;
-          playSfx(450, 0.06, "square", 0.016, 70);
-        } else if (input.left || input.right) {
-          const dir = input.left ? -1 : 1;
-          player.facing = dir;
-          player.climbing = false;
-          player.ladderId = null;
-          player.vx = dir * 3.2;
-        } else if (player.y <= topY + 0.5 && input.up) {
-          player.climbing = false;
-          player.ladderId = null;
-          player.y = topY;
+    if (!player.onUnicorn) {
+      const nearbyLadder = ladderForEntity(player);
+      if (!player.climbing && nearbyLadder && (input.up || input.down)) {
+        const bottom = player.y + player.h;
+        const canEnter = (input.up && bottom >= nearbyLadder.topY - 8) || (input.down && player.y <= nearbyLadder.bottomY);
+        if (canEnter) {
+          player.climbing = true;
+          player.ladderId = nearbyLadder.id;
+          player.vx = 0;
           player.vy = 0;
-          player.onGround = true;
-        } else if (player.y >= bottomY - 0.5 && input.down) {
-          player.climbing = false;
-          player.ladderId = null;
-          player.y = bottomY;
-          player.vy = 0;
-          player.onGround = true;
+          player.x = nearbyLadder.x + nearbyLadder.w / 2 - player.w / 2;
+          if (!level.ladderTipShown) {
+            message = "Use Up / Down to climb. Goblins use ladders too!";
+            messageTimer = 150;
+            level.ladderTipShown = true;
+          }
         }
       }
+
+      if (player.climbing) {
+        const ladder = level.ladders[player.ladderId];
+        if (!ladder) {
+          player.climbing = false;
+          player.ladderId = null;
+        } else {
+          player.x = lerp(player.x, ladder.x + ladder.w / 2 - player.w / 2, 0.38 * speedScale);
+          const climbDir = (input.down ? 1 : 0) - (input.up ? 1 : 0);
+          player.vy = climbDir * 4.0;
+          player.y += player.vy * speedScale;
+          player.runPhase += Math.abs(climbDir) * 0.13 * speedScale;
+          const topY = ladder.topY - player.h;
+          const bottomY = ladder.bottomY - player.h;
+          player.y = clamp(player.y, topY, bottomY);
+
+          if (input.jumpPressed) {
+            player.climbing = false;
+            player.ladderId = null;
+            player.vy = -11.5;
+            player.vx = player.facing * 3.0;
+            playSfx(450, 0.06, "square", 0.016, 70);
+          } else if (input.left || input.right) {
+            const dir = input.left ? -1 : 1;
+            player.facing = dir;
+            player.climbing = false;
+            player.ladderId = null;
+            player.vx = dir * 3.2;
+          } else if (player.y <= topY + 0.5 && input.up) {
+            player.climbing = false;
+            player.ladderId = null;
+            player.y = topY;
+            player.vy = 0;
+            player.onGround = true;
+          } else if (player.y >= bottomY - 0.5 && input.down) {
+            player.climbing = false;
+            player.ladderId = null;
+            player.y = bottomY;
+            player.vy = 0;
+            player.onGround = true;
+          }
+        }
+      }
+    } else {
+      player.climbing = false;
+      player.ladderId = null;
     }
 
     if (!player.climbing) {
       const targetVx = (input.left ? -1 : 0) + (input.right ? 1 : 0);
-      const maxSpeed = 7.25;
+      const maxSpeed = player.onUnicorn ? 9.15 : 7.25;
       if (targetVx !== 0) {
         const target = targetVx * maxSpeed;
         const turning = Math.sign(target) !== Math.sign(player.vx) && Math.abs(player.vx) > 0.4;
-        const accel = (player.onGround ? 1.05 : 0.58) * (turning ? 1.35 : 1);
+        const accelBase = player.onUnicorn ? 1.18 : 1.05;
+        const accel = (player.onGround ? accelBase : 0.58) * (turning ? 1.35 : 1);
         const delta = clamp(target - player.vx, -accel * speedScale, accel * speedScale);
         player.vx += delta;
         player.facing = targetVx;
-        player.runPhase += Math.abs(player.vx) * 0.052 * speedScale;
+        player.runPhase += Math.abs(player.vx) * (player.onUnicorn ? 0.062 : 0.052) * speedScale;
       } else {
-        player.vx *= Math.pow(player.onGround ? 0.76 : 0.955, speedScale);
+        player.vx *= Math.pow(player.onGround ? (player.onUnicorn ? 0.80 : 0.76) : 0.955, speedScale);
         player.runPhase += 0.008 * speedScale;
       }
 
       if (player.jumpBuffer > 0 && player.coyote > 0) {
-        player.vy = -14.7;
+        player.vy = player.onUnicorn ? -17.25 : -14.7;
         player.vx += player.platformCarryVx * 0.9;
         player.onGround = false;
         player.coyote = 0;
         player.jumpBuffer = 0;
-        playSfx(440, 0.07, "square", 0.018, 90);
+        playSfx(player.onUnicorn ? 510 : 440, 0.08, "square", 0.02, player.onUnicorn ? 130 : 90);
       }
 
       if (!input.jumpHeld && player.vy < -6) player.vy += 0.55 * speedScale;
       const nearApex = Math.abs(player.vy) < 2.4;
-      const gravity = nearApex ? 0.38 : 0.72;
+      const gravity = nearApex ? (player.onUnicorn ? 0.32 : 0.38) : 0.72;
       player.vy += gravity * speedScale;
       player.vy = Math.min(player.vy, 17);
 
@@ -1349,16 +1190,14 @@
         const springRect = { x: sp.x, y: sp.y, w: sp.w, h: sp.h };
         if (rectsOverlap(player, springRect) && player.vy >= 0 && (player.y + player.h) <= sp.y + sp.h + 12) {
           player.y = sp.y - player.h;
-          player.vy = -sp.boost;
+          player.vy = -(sp.boost + (player.onUnicorn ? 2.2 : 0));
           player.onGround = false;
           player.landSquash = 1.0;
           player.launchStretch = sp.style === "mushroom" ? 1.0 : 0.72;
           sp.pulse = 1.0;
           screenShake = Math.max(screenShake, sp.style === "mushroom" ? 9 : 5);
           playSfx(sp.style === "mushroom" ? 190 : 620, 0.11, sp.style === "mushroom" ? "square" : "triangle", 0.03, sp.style === "mushroom" ? 310 : 140);
-          if (sp.style === "mushroom") {
-            setTimeout(() => playSfx(470, 0.10, "triangle", 0.022, 150), 45);
-          }
+          if (sp.style === "mushroom") setTimeout(() => playSfx(470, 0.10, "triangle", 0.022, 150), 45);
         }
       }
     }
@@ -1369,8 +1208,8 @@
       return;
     }
 
-    if (player.x > level.checkpoint + 850 && player.x < 4100) {
-      level.checkpoint = Math.floor(player.x / 850) * 850;
+    if (player.x > level.checkpoint + 900 && player.x < level.boss.arenaLeft - 350) {
+      level.checkpoint = Math.floor(player.x / 900) * 900;
     }
 
     for (const g of level.gems) {
@@ -1380,7 +1219,9 @@
         g.collected = true;
         score += 50;
         totalGems++;
-        playSfx(820, 0.055, "triangle", 0.02, 160);
+        level.rainbowCollected.add(g.colorIndex);
+        playSfx(820 + g.colorIndex * 25, 0.055, "triangle", 0.02, 160);
+        if (level.rainbowCollected.size === 7 && !level.unicorn.unlocked) unlockUnicorn();
       }
     }
 
@@ -1390,7 +1231,7 @@
         level.bonusStar.collected = true;
         score += 500;
         if (player.hearts < player.maxHearts) player.hearts++;
-        message = player.hearts < player.maxHearts ? "Secret rainbow star!" : "Secret rainbow star - bonus magic!";
+        message = "Secret Magic Star - heart restored!";
         messageTimer = 120;
         jingle();
       }
@@ -1401,7 +1242,6 @@
       e.blink += 0.06 * speedScale;
       e.bob += 0.05 * speedScale;
       if (e.climbCooldown !== undefined) e.climbCooldown -= speedScale;
-
       if (e.ladderId !== undefined) {
         const ladder = level.ladders[e.ladderId];
         const ladderX = ladder.x + ladder.w / 2 - e.w / 2;
@@ -1426,20 +1266,16 @@
           }
         } else {
           e.x += e.vx * speedScale;
-          if (e.x < e.left || e.x > e.right) {
-            e.x = clamp(e.x, e.left, e.right);
-            e.vx *= -1;
-          }
+          if (e.x < e.left || e.x > e.right) { e.x = clamp(e.x, e.left, e.right); e.vx *= -1; }
           const goblinCenter = e.x + e.w / 2;
           const ladderCenter = ladder.x + ladder.w / 2;
           if (e.climbCooldown <= 0 && Math.abs(goblinCenter - ladderCenter) < 14) {
             e.mode = "climb";
-            e.climbDir = e.modeBefore === "platform" || e.y < GROUND_Y - e.h - 30 ? 1 : -1;
+            e.climbDir = e.y < GROUND_Y - e.h - 30 ? 1 : -1;
             if (e.y <= ladder.topY - e.h + 8) e.climbDir = 1;
             if (e.y >= ladder.bottomY - e.h - 8) e.climbDir = -1;
             e.climbCooldown = 150;
           }
-          e.modeBefore = e.mode;
         }
       } else {
         e.x += e.vx * speedScale;
@@ -1457,14 +1293,20 @@
     updateProjectiles(speedScale);
     updateIcicles(speedScale);
 
-    if (level.boss.alive && rectsOverlap(player, level.boss)) {
+    let hornHit = false;
+    if (level.boss.alive && player.onUnicorn && Math.abs(player.vx) > 2.2) {
+      const center = player.x + player.w / 2;
+      const hornRect = { x: player.facing > 0 ? center + 28 : center - 74, y: player.y + 18, w: 46, h: 34 };
+      if (rectsOverlap(hornRect, level.boss)) hornHit = hitBoss("horn");
+    }
+    if (level.boss.alive && !hornHit && rectsOverlap(player, level.boss)) {
       const prevBottom = player.prevY + player.h;
-      if (!player.climbing && player.vy > 0 && prevBottom <= level.boss.y + 18) hitBoss();
+      if (!player.climbing && player.vy > 0 && prevBottom <= level.boss.y + 18) hitBoss("stomp");
       else damagePlayer(level.boss.x + level.boss.w / 2);
     }
 
     if (!level.boss.alive) {
-      const fairyRect = { x: 5200, y: 438 + Math.sin(frame * 0.045) * 12, w: 58, h: 88 };
+      const fairyRect = { x: level.fairyX - 26, y: 438 + Math.sin(frame * 0.045) * 12, w: 58, h: 88 };
       if (rectsOverlap(player, fairyRect)) {
         level.fairyFound = true;
         state = "levelcomplete";
@@ -1473,9 +1315,9 @@
       }
     }
 
-    if (!level.bossIntroduced && player.x > 4200) {
+    if (!level.bossIntroduced && player.x > level.boss.arenaLeft - 210) {
       level.bossIntroduced = true;
-      message = "Jack Frost blocks the way! Jump on him 3 times!";
+      message = player.onUnicorn ? "Charge Jack Frost with the unicorn horn or stomp him - 3 hits!" : "Jack Frost blocks the way! Jump on him 3 times!";
       messageTimer = 230;
       playSfx(160, 0.20, "sawtooth", 0.03, 60);
     }
@@ -1487,7 +1329,7 @@
   function updateBoss(s) {
     const b = level.boss;
     if (!b.alive) return;
-    if (player.x < 4100) return;
+    if (player.x < level.boss.arenaLeft - 300) return;
 
     b.facing = player.x < b.x ? -1 : 1;
     b.phase = b.hp <= 2 ? 2 : 1;
@@ -1583,7 +1425,7 @@
         damagePlayer(p.x);
       }
     }
-    level.projectiles = level.projectiles.filter(p => p.life > 0 && p.y < H + 100 && p.x > 3820 && p.x < 5350);
+    level.projectiles = level.projectiles.filter(p => p.life > 0 && p.y < H + 100 && p.x > level.boss.arenaLeft - 650 && p.x < level.boss.arenaRight + 520);
   }
 
   function updateIcicles(s) {
@@ -1667,7 +1509,7 @@
 
     ctx.font = "800 22px system-ui";
     ctx.fillStyle = "#59486f";
-    ctx.fillText("A cute platform adventure for Kirsty, Rachael and the rainbow fairies", W / 2, 278);
+    ctx.fillText("A cute platform adventure for Kirsty, Rachel and the rainbow fairies", W / 2, 278);
 
     drawFairy(200, 315, fairies[0].color, 1.26, true);
     drawFairy(1015, 300, fairies[4].color, 1.16, true);
@@ -1746,8 +1588,17 @@
     for (const p of level.projectiles) drawSnowball(p.x, p.y, p.spin || 0);
     for (const ic of activeIcicles) drawIcicle(ic);
     if (level.boss.alive) drawJackFrost(level.boss);
-    else drawFairy(5226, 474 + Math.sin(frame * 0.045) * 12, level.fairy.color, 1.18, true);
-    drawGirl(player.x + player.w / 2, player.y + player.h / 2, characters[selectedCharacter], 1.0, player.facing, player.runPhase, true);
+    else drawFairy(level.fairyX, 474 + Math.sin(frame * 0.045) * 12, level.fairy.color, 1.18, true);
+
+    const u = level.unicorn;
+    const spinProgress = u.spinTimer > 0 ? 1 - u.spinTimer / u.spinTotal : 0;
+    const spinAngle = u.spinTimer > 0 ? spinProgress * Math.PI * 6 : 0;
+    if (player.onUnicorn) {
+      drawUnicorn(player.x + player.w / 2, player.y + player.h, player.facing, player.runPhase, spinAngle, true);
+    } else {
+      if (u.unlocked) drawUnicorn(u.x, u.y, u.facing, u.phase, spinAngle, false);
+      drawGirl(player.x + player.w / 2, player.y + player.h / 2, characters[selectedCharacter], 1.0, player.facing, player.runPhase, true);
+    }
     for (const burst of comicBursts) drawComicBurst(burst);
     ctx.restore();
   }
@@ -2032,7 +1883,7 @@
   }
 
   function drawHUD() {
-    roundedRect(18, 18, 445, 94, 22, "rgba(31,22,65,.76)", "rgba(255,255,255,.3)", 2);
+    roundedRect(18, 18, 465, 112, 22, "rgba(31,22,65,.76)", "rgba(255,255,255,.3)", 2);
     ctx.textAlign = "left";
     ctx.fillStyle = "white";
     ctx.font = "900 22px system-ui";
@@ -2040,19 +1891,34 @@
     ctx.font = "650 15px system-ui";
     ctx.fillStyle = "rgba(255,255,255,.88)";
     ctx.fillText(`Find ${level.fairy.name}`, 36, 76);
-
     for (let i = 0; i < player.maxHearts; i++) drawHeart(36 + i * 31, 94, i < player.hearts ? "#ff5578" : "rgba(255,255,255,.18)");
 
-    roundedRect(W - 265, 18, 247, 94, 22, "rgba(31,22,65,.76)", "rgba(255,255,255,.3)", 2);
+    ctx.font = "700 12px system-ui";
+    ctx.fillStyle = "rgba(255,255,255,.9)";
+    ctx.fillText("Rainbow set", 205, 100);
+    for (let i = 0; i < 7; i++) {
+      ctx.save();
+      ctx.globalAlpha = level.rainbowCollected.has(i) ? 1 : 0.28;
+      ctx.fillStyle = RAINBOW_COLORS[i].color;
+      ctx.beginPath(); ctx.arc(290 + i * 23, 95, 7, 0, Math.PI * 2); ctx.fill();
+      if (level.rainbowCollected.has(i)) {
+        ctx.strokeStyle = "white"; ctx.lineWidth = 1.5; ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    roundedRect(W - 275, 18, 257, 112, 22, "rgba(31,22,65,.76)", "rgba(255,255,255,.3)", 2);
     ctx.textAlign = "right";
     ctx.fillStyle = "white";
     ctx.font = "800 18px system-ui";
-    ctx.fillText(`Score ${score.toLocaleString()}`, W - 35, 50);
-    ctx.font = "700 16px system-ui";
-    ctx.fillText(`Rainbow gems ${totalGems}`, W - 35, 78);
-    ctx.fillText(`Magic star ${level.bonusStar.collected ? "★" : "☆"}`, W - 35, 100);
+    ctx.fillText(`Score ${score.toLocaleString()}`, W - 35, 48);
+    ctx.font = "700 15px system-ui";
+    ctx.fillText(`Jewels ${totalGems}`, W - 35, 72);
+    ctx.fillText(`Magic star ${level.bonusStar.collected ? "★" : "☆"}`, W - 35, 94);
+    ctx.fillStyle = level.unicorn.unlocked ? "#ffe985" : "rgba(255,255,255,.62)";
+    ctx.fillText(level.unicorn.unlocked ? (player.onUnicorn ? "Unicorn: riding (X / E)" : "Unicorn: ready (X / E)") : "Unicorn: collect 7 colours", W - 35, 116);
 
-    if (level.boss.alive && player.x > 4100) {
+    if (level.boss.alive && player.x > level.boss.arenaLeft - 300) {
       roundedRect(420, 20, 440, 64, 18, "rgba(40,28,76,.82)", "rgba(255,255,255,.25)", 2);
       ctx.textAlign = "center";
       ctx.font = "900 17px system-ui";
@@ -2065,11 +1931,11 @@
 
     if (messageTimer > 0 && state === "playing") {
       ctx.globalAlpha = Math.min(1, messageTimer / 25);
-      roundedRect(300, 125, 680, 62, 20, "rgba(255,255,255,.9)", "rgba(95,63,130,.25)", 2);
+      roundedRect(270, 140, 740, 62, 20, "rgba(255,255,255,.92)", "rgba(95,63,130,.25)", 2);
       ctx.textAlign = "center";
       ctx.fillStyle = "#4a3473";
-      ctx.font = "850 22px system-ui";
-      ctx.fillText(message, W / 2, 164);
+      ctx.font = "850 21px system-ui";
+      ctx.fillText(message, W / 2, 179);
       ctx.globalAlpha = 1;
     }
   }
@@ -2085,7 +1951,7 @@
     ctx.font = "650 20px system-ui";
     ctx.fillText("Press P or controller Start", W / 2, 368);
     ctx.fillText(`Sound: ${soundOn ? "On" : "Off"}   Music: ${musicOn ? "On" : "Off"}`, W / 2, 406);
-    ctx.fillText("Press F for full screen", W / 2, 442);
+    ctx.fillText("B jumps. X / E mounts or dismounts the Magic Unicorn.", W / 2, 442);
   }
 
   function drawLevelComplete() {
@@ -2404,6 +2270,86 @@
     ctx.fillStyle = "#c7b0ff";
     ctx.beginPath(); ctx.arc(-9, 10, 3, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(9, 10, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawUnicorn(cx, groundY, facing = 1, phase = 0, angle = 0, withRider = false) {
+    ctx.save();
+    ctx.translate(cx, groundY);
+    ctx.rotate(angle);
+    ctx.scale(facing, 1);
+    const gallop = Math.sin(phase * 1.8) * 4;
+    const bob = Math.abs(Math.sin(phase * 1.8)) * 3;
+    ctx.translate(0, -bob);
+
+    const rainbow = RAINBOW_COLORS.map(c => c.color);
+    ctx.lineCap = "round";
+    for (let i = 0; i < rainbow.length; i++) {
+      ctx.strokeStyle = rainbow[i];
+      ctx.lineWidth = 4.5;
+      ctx.beginPath();
+      ctx.moveTo(-38 - i * 1.2, -43 + i * 2);
+      ctx.quadraticCurveTo(-65 - i * 4, -56 + Math.sin(phase + i) * 5, -78 - i * 2, -32 + i * 2);
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = "#e9ddea";
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.moveTo(-24, -28); ctx.lineTo(-25 + gallop, -1);
+    ctx.moveTo(10, -28); ctx.lineTo(12 - gallop, -1);
+    ctx.stroke();
+    ctx.fillStyle = "#d8c9df";
+    roundedRect(-31 + gallop, -5, 15, 6, 3, "#d8c9df");
+    roundedRect(5 - gallop, -5, 15, 6, 3, "#d8c9df");
+
+    const bodyGrad = ctx.createLinearGradient(0, -65, 0, -22);
+    bodyGrad.addColorStop(0, "#fffefe");
+    bodyGrad.addColorStop(1, "#eee5f3");
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath();
+    ctx.ellipse(-5, -43, 43, 25, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#faf6ff";
+    ctx.beginPath();
+    ctx.ellipse(35, -60, 23, 19, -0.12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(45, -74); ctx.lineTo(52, -92); ctx.lineTo(55, -72); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(27, -74); ctx.lineTo(22, -88); ctx.lineTo(36, -75); ctx.closePath(); ctx.fill();
+
+    const hornGrad = ctx.createLinearGradient(54, -68, 78, -88);
+    hornGrad.addColorStop(0, "#fff3a0");
+    hornGrad.addColorStop(1, "#f5bfff");
+    ctx.fillStyle = hornGrad;
+    ctx.beginPath();
+    ctx.moveTo(51, -71); ctx.lineTo(80, -88); ctx.lineTo(57, -65); ctx.closePath();
+    ctx.fill();
+
+    for (let i = 0; i < rainbow.length; i++) {
+      ctx.strokeStyle = rainbow[i];
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(24 - i * 1.2, -72 + i * 2.5);
+      ctx.quadraticCurveTo(6 - i * 1.5, -82 + Math.sin(phase + i) * 3, -2 - i * 0.8, -61 + i * 2);
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = "#4c3d5e";
+    ctx.beginPath(); ctx.arc(43, -62, 2.2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,.9)";
+    ctx.beginPath(); ctx.arc(43.8, -62.8, 0.7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#f4a7bb";
+    ctx.beginPath(); ctx.ellipse(54, -53, 3.6, 2.2, 0, 0, Math.PI * 2); ctx.fill();
+
+    if (withRider) {
+      ctx.save();
+      ctx.translate(-7, -88);
+      drawGirl(0, 0, characters[selectedCharacter], 0.82, 1, phase * 1.2, false);
+      ctx.restore();
+    }
     ctx.restore();
   }
 
