@@ -980,19 +980,52 @@
   }
 
   function respawnPlayer() {
-    player.x = level.checkpoint;
-    player.y = GROUND_Y - player.h - 4;
+    // Always snap respawns to confirmed solid ground, never over a gap.
+    const respawnX = safeGroundX(level.checkpoint);
+    const respawnGroundY = groundYAtX(respawnX);
+    player.x = respawnX;
+    player.y = respawnGroundY - player.h - 4;
     player.vx = 0;
     player.vy = 0;
     player.invuln = 120;
     player.holdingSnowball = false;
+    player.climbing = false;
+    player.ladderId = null;
     if (player.onUnicorn && level.unicorn) {
       player.onUnicorn = false;
       level.unicorn.mounted = false;
-      level.unicorn.x = player.x + 100;
-      level.unicorn.y = GROUND_Y;
+      level.unicorn.x = safeGroundX(player.x + 100);
+      level.unicorn.y = groundYAtX(level.unicorn.x);
     }
     cameraX = clamp(player.x - W * 0.35, 0, LEVEL_WIDTH - W);
+  }
+
+  function fallIntoHazard() {
+    if (!player || state !== "playing") return;
+
+    // A hole always costs exactly one heart, even during hit invulnerability.
+    player.hearts = Math.max(0, player.hearts - 1);
+    player.holdingSnowball = false;
+    player.climbing = false;
+    player.ladderId = null;
+    screenShake = 18;
+    playSfx(120, 0.22, "sawtooth", 0.05, -70);
+
+    if (player.onUnicorn && level.unicorn) {
+      player.onUnicorn = false;
+      level.unicorn.mounted = false;
+    }
+
+    if (player.hearts <= 0) {
+      runDeaths++;
+      state = runDeaths >= 3 ? "finalgameover" : "gameover";
+      playSfx(180, 0.28, "square", 0.035, -90);
+      return;
+    }
+
+    message = "Careful! You lost a heart.";
+    messageTimer = 105;
+    respawnPlayer();
   }
 
   function damagePlayer(fromX) {
@@ -1618,13 +1651,26 @@
     }
 
     if (player.y > H + 120) {
-      damagePlayer(player.x);
-      if (player.hearts > 0) respawnPlayer();
+      fallIntoHazard();
       return;
     }
 
-    if (player.x > level.checkpoint + 900 && player.x < level.boss.arenaLeft - 350) {
-      level.checkpoint = Math.floor(player.x / 900) * 900;
+    // Only advance checkpoints while safely standing well inside a solid
+    // ground segment. Never save a checkpoint in mid-air or near a hole lip.
+    if (player.onGround && player.x < level.boss.arenaLeft - 350) {
+      const centreX = player.x + player.w / 2;
+      const safeGround = level.platforms.find(p =>
+        p.h > 40 &&
+        centreX >= p.x + 85 &&
+        centreX <= p.x + p.w - 85
+      );
+      if (safeGround && centreX > level.checkpoint + 260) {
+        level.checkpoint = clamp(
+          centreX,
+          safeGround.x + 90,
+          safeGround.x + safeGround.w - 90
+        );
+      }
     }
 
     for (const g of level.gems) {
