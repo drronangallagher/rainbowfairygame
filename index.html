@@ -105,8 +105,8 @@
     <button id="fsBtn" class="uiBtn" type="button">Full Screen</button>
   </div>
   <div id="tip">
-    <span><strong>Keyboard</strong> - A/D move, Up/Down ladders, Space jump, P pause, F full screen, M sound, N music</span>
-    <span id="padStatus"><strong>Controller</strong> - B jump, X mount/dismount unicorn</span>
+    <span><strong>Keyboard</strong> - A/D move, Up/Down ladders, Space jump, E unicorn, Q snowball, P pause, F full screen</span>
+    <span id="padStatus"><strong>Controller</strong> - B jump, X unicorn, Y snowball</span>
   </div>
 </div>
 <script>
@@ -206,6 +206,7 @@
   let lastMusicTheme = "title";
   let activeIcicles = [];
   let comicBursts = [];
+  let runDeaths = 0;
 
   let previousPad = {
     jump: false,
@@ -214,7 +215,8 @@
     right: false,
     confirm: false,
     fullscreen: false,
-    mount: false
+    mount: false,
+    throw: false
   };
 
   function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
@@ -435,15 +437,16 @@
   function makeLevel(index) {
     const f = fairies[index];
     const gapSets = [
-      [[930,1060],[1810,1940],[2860,2995],[4130,4250],[5420,5550],[6520,6650]],
-      [[760,900],[1610,1740],[2500,2650],[3550,3665],[4780,4925],[6160,6300]],
-      [[1080,1200],[2180,2310],[3360,3480],[4460,4605],[5660,5790],[6620,6750]],
-      [[880,1005],[1980,2100],[3060,3205],[4330,4455],[5260,5395],[6420,6550]],
-      [[690,835],[1510,1670],[2590,2740],[3790,3945],[5040,5200],[6250,6405]],
-      [[1020,1140],[1890,2030],[3180,3320],[4270,4410],[5550,5690],[6480,6620]],
-      [[820,950],[1760,1900],[2700,2845],[3980,4110],[5200,5350],[6340,6480]]
+      [[930,1060],[1810,2205],[2860,2995],[4130,4250],[5420,5790],[6520,6650]],
+      [[760,900],[1610,1740],[2500,2880],[3550,3665],[4780,4925],[6160,6535]],
+      [[1080,1200],[2180,2580],[3360,3480],[4460,4605],[5660,6035],[6620,6750]],
+      [[880,1005],[1980,2100],[3060,3450],[4330,4455],[5260,5635],[6420,6550]],
+      [[690,835],[1510,1895],[2590,2740],[3790,3945],[5040,5425],[6250,6405]],
+      [[1020,1140],[1890,2290],[3180,3320],[4270,4410],[5550,5925],[6480,6620]],
+      [[820,950],[1760,2160],[2700,2845],[3980,4110],[5200,5575],[6340,6480]]
     ];
     const gaps = gapSets[index];
+    const bounceGaps = gaps.filter(([a,b]) => b - a >= 330);
     const grounds = [];
     let cursor = 0;
     for (const [a,b] of gaps) {
@@ -472,7 +475,8 @@
       const w = widths[(seq + index * 2 + zone) % widths.length];
       const center = px + w / 2;
       const overGround = grounds.some(g => center >= g.x + 20 && center <= g.x + g.w - 20);
-      platforms.push({ x: px, y, w, h: 24, ladderCandidate: overGround && seq % (index % 2 ? 5 : 4) === 1 });
+      const blocksBounceGap = bounceGaps.some(([a,b]) => center > a - 30 && center < b + 30);
+      if (!blocksBounceGap) platforms.push({ x: px, y, w, h: 24, ladderCandidate: overGround && seq % (index % 2 ? 5 : 4) === 1 });
       px += 275 + ((seq * 47 + index * 31) % 105);
       seq++;
     }
@@ -481,8 +485,11 @@
     const movingPlatforms = [];
     const movingXs = [1180, 2460, 3610, 4950, 6260];
     movingXs.forEach((x,i) => {
+      let safeX = x;
+      const blocked = bounceGaps.find(([a,b]) => safeX > a - 100 && safeX < b + 100);
+      if (blocked) safeX = blocked[1] + 170;
       movingPlatforms.push({
-        x, y: 360 + ((i * 57 + index * 33) % 130), baseX: x, baseY: 360 + ((i * 57 + index * 33) % 130),
+        x: safeX, y: 360 + ((i * 57 + index * 33) % 130), baseX: safeX, baseY: 360 + ((i * 57 + index * 33) % 130),
         w: 132 + (i % 2) * 16, h: 22, ampX: 55 + ((i + index) % 3) * 28, ampY: 10 + (i % 3) * 7,
         speed: 0.0095 + index * 0.00045 + i * 0.00035, phase: i * 0.9 + index * 0.25,
         dx: 0, dy: 0, style: movingStyles[(i + index) % movingStyles.length]
@@ -490,19 +497,25 @@
     });
 
     const springXsByLevel = [
-      [560,1320,2280,3180,4490,5350,6200,6800],
-      [430,1210,2120,3020,4140,5080,5920,6710],
-      [610,1430,2360,3260,4380,5230,6070,6810],
-      [500,1260,2190,3490,4520,5480,6150,6770],
-      [420,1370,2250,3450,4680,5520,6120,6740],
-      [590,1510,2410,3420,4310,5190,6030,6790],
-      [470,1280,2330,3300,4470,5410,6190,6820]
+      [420,720,1320,2520,3180,3720,4490,5000,6200,6800],
+      [430,1030,1460,2120,3250,3820,4140,5080,5920,6820],
+      [520,1430,1840,2860,3260,3920,4380,5230,6070,6900],
+      [500,1260,1650,2480,3490,4010,4520,5480,6150,6840],
+      [420,1100,2250,3180,3450,4680,5520,5900,6120,6840],
+      [590,1510,1680,2720,3420,4310,5190,6030,6250,6900],
+      [470,1280,1500,2330,3300,4470,4900,5410,6190,6900]
     ];
-    const springStyles = ["mushroom","flower","mushroom","flower","mushroom","flower","mushroom","flower"];
-    const springs = springXsByLevel[index].map((x,i) => ({
-      x, y: GROUND_Y - 16, w: 48, h: 16,
-      boost: springStyles[i] === "mushroom" ? 25.5 + (i % 2) : 21.5 + (i % 3) * 0.5,
-      style: springStyles[(i + index) % springStyles.length], pulse: 0
+    const springStyles = ["mushroom","flower","flower","mushroom","flower","mushroom","flower","mushroom","flower","mushroom"];
+    const springSpecs = springXsByLevel[index].map((x,i) => ({ x, style: springStyles[(i + index) % springStyles.length], required: false }));
+    bounceGaps.forEach(([a,b],i) => {
+      springSpecs.push({ x: a - 72, style: i % 2 === 0 ? "mushroom" : "flower", required: true });
+    });
+    springSpecs.sort((a,b) => a.x - b.x);
+    const dedupedSpecs = springSpecs.filter((sp,i,arr) => i === 0 || Math.abs(sp.x - arr[i-1].x) > 55);
+    const springs = dedupedSpecs.map((sp,i) => ({
+      x: sp.x, y: GROUND_Y - 16, w: 50, h: 16,
+      boost: sp.style === "mushroom" ? (sp.required ? 27.5 : 25.8 + (i % 2)) : (sp.required ? 23.8 : 21.8 + (i % 3) * 0.5),
+      style: sp.style, pulse: 0, required: sp.required
     }));
 
     const ladderPlatforms = platforms.filter(p => p.h === 24 && p.ladderCandidate).slice(0, 7);
@@ -584,7 +597,7 @@
         facing: 1,
         phase: 0,
         spinTimer: 0,
-        spinTotal: 180,
+        spinTotal: 210,
         yipeeSpoken: false
       },
       boss: {
@@ -738,7 +751,8 @@
       wasOnGround: false,
       platformCarryVx: 0,
       platformCarryVy: 0,
-      onUnicorn: false
+      onUnicorn: false,
+      holdingSnowball: false
     };
   }
 
@@ -764,6 +778,7 @@
     player.vx = 0;
     player.vy = 0;
     player.invuln = 120;
+    player.holdingSnowball = false;
     if (player.onUnicorn && level.unicorn) {
       player.onUnicorn = false;
       level.unicorn.mounted = false;
@@ -782,7 +797,9 @@
     screenShake = 15;
     playSfx(150, 0.18, "sawtooth", 0.045, -60);
     if (player.hearts <= 0) {
-      state = "gameover";
+      runDeaths++;
+      player.holdingSnowball = false;
+      state = runDeaths >= 3 ? "finalgameover" : "gameover";
       playSfx(180, 0.28, "square", 0.035, -90);
     }
   }
@@ -808,7 +825,7 @@
     const b = level.boss;
     if (!b.alive || b.invuln > 0) return false;
     b.hp--;
-    b.invuln = source === "horn" ? 64 : 52;
+    b.invuln = source === "horn" ? 64 : (source === "snowball" ? 46 : 52);
     b.phase = b.hp <= 2 ? 2 : 1;
     b.scaredTimer = 45;
     if (source === "horn") {
@@ -817,6 +834,11 @@
       score += 650;
       comicBursts.push({ x: b.x + b.w / 2, y: b.y + 12, text: "BONK!", life: 55, vy: -0.25 });
       playSfx(330, 0.1, "square", 0.045, 260);
+    } else if (source === "snowball") {
+      screenShake = 16;
+      score += 600;
+      comicBursts.push({ x: b.x + b.w / 2, y: b.y + 8, text: "SPLAT!", life: 58, vy: -0.28 });
+      playSfx(210, 0.11, "triangle", 0.038, 240);
     } else {
       player.vy = -12.2;
       player.vx = player.x < b.x ? -4.3 : 4.3;
@@ -856,12 +878,13 @@
     let padDown = false;
     let padFs = false;
     let padMount = false;
+    let padThrow = false;
 
     const pads = navigator.getGamepads ? navigator.getGamepads() : [];
     const gp = Array.from(pads || []).find(Boolean);
     if (gp) {
       gamepadName = gp.id || "Gamepad";
-      padStatus.innerHTML = `<strong>Controller</strong> - ${gamepadName.slice(0, 30)} | B jump | X unicorn`;
+      padStatus.innerHTML = `<strong>Controller</strong> - ${gamepadName.slice(0, 30)} | B jump | X unicorn | Y snowball`;
       const ax = Math.abs(gp.axes[0] || 0) > 0.18 ? gp.axes[0] : 0;
       const ay = Math.abs(gp.axes[1] || 0) > 0.18 ? gp.axes[1] : 0;
       padLeft = ax < -0.25 || !!gp.buttons[14]?.pressed;
@@ -871,6 +894,7 @@
       padJump = !!gp.buttons[0]?.pressed || !!gp.buttons[1]?.pressed;
       padConfirm = !!gp.buttons[0]?.pressed || !!gp.buttons[1]?.pressed;
       padMount = !!gp.buttons[2]?.pressed;
+      padThrow = !!gp.buttons[3]?.pressed;
       padStart = !!gp.buttons[9]?.pressed;
       padFs = !!gp.buttons[8]?.pressed;
       left ||= padLeft;
@@ -882,14 +906,15 @@
 
     const jumpPressed = (keysPressed.has("Space") || keysPressed.has("KeyZ")) || (padJump && !previousPad.jump);
     const mountPressed = keysPressed.has("KeyE") || (padMount && !previousPad.mount);
+    const throwPressed = keysPressed.has("KeyQ") || (padThrow && !previousPad.throw);
     const confirmPressed = keysPressed.has("Enter") || (padConfirm && !previousPad.confirm);
     const startPressed = keysPressed.has("KeyP") || (padStart && !previousPad.start);
     const menuLeftPressed = keysPressed.has("ArrowLeft") || keysPressed.has("KeyA") || (padLeft && !previousPad.left);
     const menuRightPressed = keysPressed.has("ArrowRight") || keysPressed.has("KeyD") || (padRight && !previousPad.right);
     const fullscreenPressed = keysPressed.has("KeyF") || (padFs && !previousPad.fullscreen);
 
-    previousPad = { jump: padJump, start: padStart, left: padLeft, right: padRight, confirm: padConfirm, fullscreen: padFs, mount: padMount };
-    return { left, right, up, down, jumpHeld, jumpPressed, mountPressed, confirmPressed, startPressed, menuLeftPressed, menuRightPressed, fullscreenPressed };
+    previousPad = { jump: padJump, start: padStart, left: padLeft, right: padRight, confirm: padConfirm, fullscreen: padFs, mount: padMount, throw: padThrow };
+    return { left, right, up, down, jumpHeld, jumpPressed, mountPressed, throwPressed, confirmPressed, startPressed, menuLeftPressed, menuRightPressed, fullscreenPressed };
   }
 
   addEventListener("keydown", (e) => {
@@ -903,11 +928,11 @@
   addEventListener("keyup", (e) => keys.delete(e.code));
   addEventListener("gamepadconnected", (e) => {
     gamepadName = e.gamepad.id || "Gamepad";
-    padStatus.innerHTML = `<strong>Controller</strong> - ${gamepadName.slice(0, 30)} | B jump | X unicorn`;
+    padStatus.innerHTML = `<strong>Controller</strong> - ${gamepadName.slice(0, 30)} | B jump | X unicorn | Y snowball`;
   });
   addEventListener("gamepaddisconnected", () => {
     gamepadName = "";
-    padStatus.innerHTML = "<strong>Controller</strong> - B jump | X mount/dismount unicorn";
+    padStatus.innerHTML = "<strong>Controller</strong> - B jump | X unicorn | Y snowball";
   });
   document.addEventListener("fullscreenchange", updateButtonLabels);
 
@@ -926,12 +951,14 @@
     } else if (state === "select") {
       if (x >= 215 && x <= 560 && y >= 210 && y <= 575) selectedCharacter = 0;
       if (x >= 720 && x <= 1065 && y >= 210 && y <= 575) selectedCharacter = 1;
-      if (y >= 596 && y <= 674 && x >= 420 && x <= 860) startLevel(0);
+      if (y >= 596 && y <= 674 && x >= 420 && x <= 860) { runDeaths = 0; score = 0; totalGems = 0; startLevel(0); }
     } else if (state === "levelcomplete") {
       if (currentLevel < fairies.length - 1) startLevel(currentLevel + 1);
       else state = "victory";
     } else if (state === "gameover") {
       startLevel(currentLevel);
+    } else if (state === "finalgameover") {
+      runDeaths = 0; score = 0; totalGems = 0; startLevel(0);
     } else if (state === "victory") {
       state = "title";
       score = 0;
@@ -955,13 +982,26 @@
     if (state === "select") {
       if (input.menuLeftPressed) selectedCharacter = 0;
       if (input.menuRightPressed) selectedCharacter = 1;
-      if (input.confirmPressed) startLevel(0);
+      if (input.confirmPressed) { runDeaths = 0; score = 0; totalGems = 0; startLevel(0); }
       keysPressed.clear();
       return;
     }
 
     if (state === "gameover") {
       if (input.confirmPressed) startLevel(currentLevel);
+      keysPressed.clear();
+      return;
+    }
+
+    if (state === "finalgameover") {
+      if (input.confirmPressed) {
+        runDeaths = 0;
+        score = 0;
+        totalGems = 0;
+        runDeaths = 0;
+        currentLevel = 0;
+        startLevel(0);
+      }
       keysPressed.clear();
       return;
     }
@@ -980,6 +1020,7 @@
         state = "title";
         score = 0;
         totalGems = 0;
+        runDeaths = 0;
       }
       keysPressed.clear();
       return;
@@ -1025,6 +1066,46 @@
     }
   }
 
+  function handleSnowballAction() {
+    if (!level || !player || !level.boss.alive) return;
+    if (player.holdingSnowball) {
+      player.holdingSnowball = false;
+      const cx = player.x + player.w / 2;
+      level.projectiles.push({
+        x: cx + player.facing * 30,
+        y: player.y + 24,
+        w: 24, h: 24,
+        vx: player.facing * (player.onUnicorn ? 11.8 : 10.2),
+        vy: -3.2,
+        life: 260,
+        spin: 0,
+        state: "playerThrown",
+        owner: "player"
+      });
+      playSfx(370, 0.07, "triangle", 0.027, 180);
+      return;
+    }
+    let nearest = null;
+    let best = 92;
+    const px = player.x + player.w / 2;
+    const py = player.y + player.h / 2;
+    for (const p of level.projectiles) {
+      if (p.state !== "grounded") continue;
+      const d = Math.hypot(px - p.x, py - p.y);
+      if (d < best) { best = d; nearest = p; }
+    }
+    if (nearest) {
+      nearest.life = 0;
+      player.holdingSnowball = true;
+      message = "Snowball ready - press Y / Q to throw!";
+      messageTimer = 90;
+      playSfx(690, 0.055, "triangle", 0.018, 80);
+    } else {
+      message = "Move close to a snowball on the ground, then press Y / Q.";
+      messageTimer = 75;
+    }
+  }
+
   function updatePlaying(input, dt) {
     if (!player || !level) return;
     const speedScale = clamp(dt / 16.6667, 0.5, 1.7);
@@ -1044,6 +1125,7 @@
     if (screenShake > 0) screenShake -= speedScale;
 
     if (input.mountPressed && level.unicorn.unlocked && level.unicorn.spinTimer <= 0) toggleUnicornMount();
+    if (input.throwPressed) handleSnowballAction();
 
     if (input.jumpPressed) player.jumpBuffer = 9;
     else player.jumpBuffer = Math.max(0, player.jumpBuffer - speedScale);
@@ -1317,7 +1399,7 @@
 
     if (!level.bossIntroduced && player.x > level.boss.arenaLeft - 210) {
       level.bossIntroduced = true;
-      message = player.onUnicorn ? "Charge Jack Frost with the unicorn horn or stomp him - 3 hits!" : "Jack Frost blocks the way! Jump on him 3 times!";
+      message = player.onUnicorn ? "Horn, stomp, or throw his grounded snowballs back - 3 hits!" : "Stomp Jack Frost or throw his grounded snowballs back - 3 hits!";
       messageTimer = 230;
       playSfx(160, 0.20, "sawtooth", 0.03, 60);
     }
@@ -1383,8 +1465,10 @@
         h: 24,
         vx: dir * (5.2 + currentLevel * 0.15),
         vy: -2.8,
-        life: 220,
-        spin: Math.random() * Math.PI * 2
+        life: 900,
+        spin: Math.random() * Math.PI * 2,
+        state: "bossFlying",
+        owner: "boss"
       });
       if (b.phase === 2) {
         level.projectiles.push({
@@ -1414,18 +1498,44 @@
   }
 
   function updateProjectiles(s) {
+    const b = level.boss;
     for (const p of level.projectiles) {
+      if (p.life <= 0) continue;
+      if (p.state === "grounded") {
+        p.life -= 0.18 * s;
+        p.spin *= 0.9;
+        continue;
+      }
+
       p.x += p.vx * s;
-      p.vy += 0.13 * s;
+      p.vy += (p.owner === "player" ? 0.18 : 0.13) * s;
       p.y += p.vy * s;
       p.life -= s;
       p.spin += 0.2 * s;
-      if (p.life > 0 && rectsOverlap(player, p)) {
+
+      if (p.owner === "player" && b.alive && rectsOverlap(p, b)) {
+        p.life = 0;
+        hitBoss("snowball");
+        continue;
+      }
+
+      if (p.owner !== "player" && rectsOverlap(player, p)) {
         p.life = 0;
         damagePlayer(p.x);
+        continue;
+      }
+
+      if (p.y + p.h / 2 >= GROUND_Y - 5 && p.x > b.arenaLeft - 520 && p.x < b.arenaRight + 420) {
+        p.y = GROUND_Y - p.h / 2 - 4;
+        p.vx = 0;
+        p.vy = 0;
+        p.state = "grounded";
+        p.owner = "neutral";
+        p.life = Math.max(p.life, 1000);
+        playSfx(125, 0.04, "sine", 0.009, -25);
       }
     }
-    level.projectiles = level.projectiles.filter(p => p.life > 0 && p.y < H + 100 && p.x > level.boss.arenaLeft - 650 && p.x < level.boss.arenaRight + 520);
+    level.projectiles = level.projectiles.filter(p => p.life > 0 && p.y < H + 100 && p.x > b.arenaLeft - 720 && p.x < b.arenaRight + 560);
   }
 
   function updateIcicles(s) {
@@ -1453,12 +1563,13 @@
 
     if (state === "title") drawTitle();
     else if (state === "select") drawCharacterSelect();
-    else if (["playing", "levelcomplete", "gameover"].includes(state)) {
+    else if (["playing", "levelcomplete", "gameover", "finalgameover"].includes(state)) {
       drawWorld();
       drawHUD();
       if (paused) drawPause();
       if (state === "levelcomplete") drawLevelComplete();
       if (state === "gameover") drawGameOver();
+      if (state === "finalgameover") drawFinalGameOver();
     } else if (state === "victory") drawVictory();
 
     ctx.restore();
@@ -1585,7 +1696,7 @@
     for (const g of level.gems) if (!g.collected) drawGem(g.x, g.y + Math.sin(frame * 0.06 + g.phase) * 8, g.color);
     if (!level.bonusStar.collected) drawBonusStar(level.bonusStar.x, level.bonusStar.y + Math.sin(frame * 0.07 + level.bonusStar.phase) * 8);
     for (const e of level.enemies) if (e.alive) drawGoblin(e);
-    for (const p of level.projectiles) drawSnowball(p.x, p.y, p.spin || 0);
+    for (const p of level.projectiles) drawSnowball(p.x, p.y, p.spin || 0, p.state === "grounded");
     for (const ic of activeIcicles) drawIcicle(ic);
     if (level.boss.alive) drawJackFrost(level.boss);
     else drawFairy(level.fairyX, 474 + Math.sin(frame * 0.045) * 12, level.fairy.color, 1.18, true);
@@ -1595,9 +1706,11 @@
     const spinAngle = u.spinTimer > 0 ? spinProgress * Math.PI * 6 : 0;
     if (player.onUnicorn) {
       drawUnicorn(player.x + player.w / 2, player.y + player.h, player.facing, player.runPhase, spinAngle, true);
+      if (player.holdingSnowball) drawSnowball(player.x + player.w / 2 + player.facing * 30, player.y + 15, frame * 0.08, false);
     } else {
       if (u.unlocked) drawUnicorn(u.x, u.y, u.facing, u.phase, spinAngle, false);
       drawGirl(player.x + player.w / 2, player.y + player.h / 2, characters[selectedCharacter], 1.0, player.facing, player.runPhase, true);
+      if (player.holdingSnowball) drawSnowball(player.x + player.w / 2 + player.facing * 28, player.y + 8, frame * 0.08, false);
     }
     for (const burst of comicBursts) drawComicBurst(burst);
     ctx.restore();
@@ -1800,6 +1913,14 @@
 
   function drawSpringPad(sp, fairy, index) {
     ctx.save();
+    if (sp.required) {
+      ctx.fillStyle = "rgba(255,255,255,.92)";
+      roundedRect(sp.x - 14, sp.y - 58, sp.w + 28, 24, 9, "rgba(255,255,255,.92)", fairy.color, 2);
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#5a3c78";
+      ctx.font = "900 11px system-ui";
+      ctx.fillText("BOUNCE!", sp.x + sp.w / 2, sp.y - 42);
+    }
     const pulse = clamp(sp.pulse || 0, 0, 1);
     const cx = sp.x + sp.w / 2;
 
@@ -1907,16 +2028,21 @@
       ctx.restore();
     }
 
-    roundedRect(W - 275, 18, 257, 112, 22, "rgba(31,22,65,.76)", "rgba(255,255,255,.3)", 2);
+    roundedRect(W - 285, 18, 267, 150, 22, "rgba(31,22,65,.76)", "rgba(255,255,255,.3)", 2);
     ctx.textAlign = "right";
     ctx.fillStyle = "white";
     ctx.font = "800 18px system-ui";
     ctx.fillText(`Score ${score.toLocaleString()}`, W - 35, 48);
     ctx.font = "700 15px system-ui";
     ctx.fillText(`Jewels ${totalGems}`, W - 35, 72);
-    ctx.fillText(`Magic star ${level.bonusStar.collected ? "★" : "☆"}`, W - 35, 94);
+    ctx.fillText(`Magic star ${level.bonusStar.collected ? "★" : "☆"}`, W - 35, 92);
+    ctx.fillText(`Magic lives ${Math.max(0, 3 - runDeaths)}/3`, W - 35, 112);
     ctx.fillStyle = level.unicorn.unlocked ? "#ffe985" : "rgba(255,255,255,.62)";
-    ctx.fillText(level.unicorn.unlocked ? (player.onUnicorn ? "Unicorn: riding (X / E)" : "Unicorn: ready (X / E)") : "Unicorn: collect 7 colours", W - 35, 116);
+    ctx.fillText(level.unicorn.unlocked ? (player.onUnicorn ? "Unicorn: riding X/E" : "Unicorn: ready X/E") : "Unicorn: collect 7 colours", W - 35, 132);
+    if (player.holdingSnowball) {
+      ctx.fillStyle = "#dffaff";
+      ctx.fillText("Snowball ready: Y / Q", W - 35, 152);
+    }
 
     if (level.boss.alive && player.x > level.boss.arenaLeft - 300) {
       roundedRect(420, 20, 440, 64, 18, "rgba(40,28,76,.82)", "rgba(255,255,255,.25)", 2);
@@ -1951,7 +2077,7 @@
     ctx.font = "650 20px system-ui";
     ctx.fillText("Press P or controller Start", W / 2, 368);
     ctx.fillText(`Sound: ${soundOn ? "On" : "Off"}   Music: ${musicOn ? "On" : "Off"}`, W / 2, 406);
-    ctx.fillText("B jumps. X / E mounts or dismounts the Magic Unicorn.", W / 2, 442);
+    ctx.fillText("B jumps. X / E unicorn. Y / Q picks up and throws snowballs.", W / 2, 442);
   }
 
   function drawLevelComplete() {
@@ -1985,11 +2111,29 @@
     ctx.font = "650 21px system-ui";
     ctx.fillStyle = "#6c5a7b";
     ctx.fillText("Jack Frost got the better of you this time.", W / 2, 352);
-    ctx.fillText("Try the level again from the start.", W / 2, 383);
+    ctx.fillText(`Magic lives remaining: ${Math.max(0, 3 - runDeaths)}.`, W / 2, 383);
     roundedRect(440, 425, 400, 60, 20, "#6a4ca0");
     ctx.fillStyle = "white";
     ctx.font = "850 21px system-ui";
     ctx.fillText("Press B / Enter to try again", W / 2, 463);
+  }
+
+  function drawFinalGameOver() {
+    ctx.fillStyle = "rgba(15,12,42,.70)";
+    ctx.fillRect(0, 0, W, H);
+    roundedRect(330, 180, 620, 355, 34, "rgba(255,255,255,.97)", "#7357a5", 6);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#51376f";
+    ctx.font = "900 48px system-ui";
+    ctx.fillText("Out of Magic!", W / 2, 280);
+    ctx.font = "650 21px system-ui";
+    ctx.fillStyle = "#6c5a7b";
+    ctx.fillText("You have used all three magic lives.", W / 2, 333);
+    ctx.fillText("The adventure restarts from Level 1.", W / 2, 368);
+    roundedRect(420, 430, 440, 64, 22, "#6a4ca0");
+    ctx.fillStyle = "white";
+    ctx.font = "850 21px system-ui";
+    ctx.fillText("Press B / Enter to start again", W / 2, 470);
   }
 
   function drawVictory() {
@@ -2273,80 +2417,164 @@
     ctx.restore();
   }
 
-  function drawUnicorn(cx, groundY, facing = 1, phase = 0, angle = 0, withRider = false) {
+  function drawUnicorn(cx, groundY, facing = 1, phase = 0, flipAngle = 0, withRider = false) {
     ctx.save();
     ctx.translate(cx, groundY);
-    ctx.rotate(angle);
     ctx.scale(facing, 1);
-    const gallop = Math.sin(phase * 1.8) * 4;
-    const bob = Math.abs(Math.sin(phase * 1.8)) * 3;
+
+    // Three victory flips rotate around the unicorn's horizontal body axis.
+    // In a 2D canvas this is represented as a perspective Y-scale flip, not a flat 360-degree spin.
+    if (flipAngle) {
+      const flipY = Math.cos(flipAngle);
+      const bulge = 1 + 0.08 * (1 - Math.abs(flipY));
+      ctx.translate(0, -49);
+      ctx.scale(bulge, flipY);
+      ctx.translate(0, 49);
+    }
+
+    const gallop = Math.sin(phase * 1.9) * 4;
+    const bob = Math.abs(Math.sin(phase * 1.9)) * 2.5;
     ctx.translate(0, -bob);
+    const outline = "#47384f";
+    const rainbow = ["#f36ba7", "#ffe168", "#65bed8", "#9563bc"];
 
-    const rainbow = RAINBOW_COLORS.map(c => c.color);
+    // Tail: thick curling rainbow ribbons, inspired by the user's reference image.
     ctx.lineCap = "round";
-    for (let i = 0; i < rainbow.length; i++) {
-      ctx.strokeStyle = rainbow[i];
-      ctx.lineWidth = 4.5;
+    const tailOffsets = [-8, -2, 4, 10];
+    tailOffsets.forEach((off,i) => {
+      ctx.strokeStyle = outline;
+      ctx.lineWidth = 12;
       ctx.beginPath();
-      ctx.moveTo(-38 - i * 1.2, -43 + i * 2);
-      ctx.quadraticCurveTo(-65 - i * 4, -56 + Math.sin(phase + i) * 5, -78 - i * 2, -32 + i * 2);
+      ctx.moveTo(-42, -45 + off * 0.2);
+      ctx.bezierCurveTo(-78, -61 + off, -91, -22 + off, -68, -8 + off);
+      ctx.bezierCurveTo(-48, 5 + off, -44, -18 + off, -55, -24 + off);
       ctx.stroke();
-    }
+      ctx.strokeStyle = rainbow[i];
+      ctx.lineWidth = 7.5;
+      ctx.stroke();
+    });
 
-    ctx.strokeStyle = "#e9ddea";
-    ctx.lineWidth = 8;
+    // Back legs first.
+    ctx.strokeStyle = outline;
+    ctx.lineWidth = 13;
     ctx.beginPath();
-    ctx.moveTo(-24, -28); ctx.lineTo(-25 + gallop, -1);
-    ctx.moveTo(10, -28); ctx.lineTo(12 - gallop, -1);
+    ctx.moveTo(-20, -34); ctx.lineTo(-22 + gallop, -5);
+    ctx.moveTo(16, -34); ctx.lineTo(18 - gallop, -5);
     ctx.stroke();
-    ctx.fillStyle = "#d8c9df";
-    roundedRect(-31 + gallop, -5, 15, 6, 3, "#d8c9df");
-    roundedRect(5 - gallop, -5, 15, 6, 3, "#d8c9df");
+    ctx.strokeStyle = "#fffdfd";
+    ctx.lineWidth = 9;
+    ctx.beginPath();
+    ctx.moveTo(-20, -34); ctx.lineTo(-22 + gallop, -5);
+    ctx.moveTo(16, -34); ctx.lineTo(18 - gallop, -5);
+    ctx.stroke();
+    ctx.fillStyle = "#9260b9";
+    roundedRect(-30 + gallop, -8, 16, 8, 4, "#9260b9", outline, 2);
+    roundedRect(10 - gallop, -8, 16, 8, 4, "#9260b9", outline, 2);
 
-    const bodyGrad = ctx.createLinearGradient(0, -65, 0, -22);
-    bodyGrad.addColorStop(0, "#fffefe");
-    bodyGrad.addColorStop(1, "#eee5f3");
-    ctx.fillStyle = bodyGrad;
-    ctx.beginPath();
-    ctx.ellipse(-5, -43, 43, 25, 0, 0, Math.PI * 2);
-    ctx.fill();
+    // Body.
+    ctx.fillStyle = outline;
+    ctx.beginPath(); ctx.ellipse(-5, -47, 47, 28, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#fffdfd";
+    ctx.beginPath(); ctx.ellipse(-5, -47, 43, 24, 0, 0, Math.PI * 2); ctx.fill();
 
-    ctx.fillStyle = "#faf6ff";
+    // Front legs.
+    ctx.strokeStyle = outline;
+    ctx.lineWidth = 13;
     ctx.beginPath();
-    ctx.ellipse(35, -60, 23, 19, -0.12, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.moveTo(10, -33); ctx.lineTo(7 + gallop, -3);
+    ctx.moveTo(31, -36); ctx.lineTo(34 - gallop, -4);
+    ctx.stroke();
+    ctx.strokeStyle = "#fffdfd";
+    ctx.lineWidth = 9;
     ctx.beginPath();
-    ctx.moveTo(45, -74); ctx.lineTo(52, -92); ctx.lineTo(55, -72); ctx.closePath(); ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(27, -74); ctx.lineTo(22, -88); ctx.lineTo(36, -75); ctx.closePath(); ctx.fill();
+    ctx.moveTo(10, -33); ctx.lineTo(7 + gallop, -3);
+    ctx.moveTo(31, -36); ctx.lineTo(34 - gallop, -4);
+    ctx.stroke();
+    roundedRect(-1 + gallop, -7, 16, 8, 4, "#9260b9", outline, 2);
+    roundedRect(26 - gallop, -8, 16, 8, 4, "#9260b9", outline, 2);
 
-    const hornGrad = ctx.createLinearGradient(54, -68, 78, -88);
-    hornGrad.addColorStop(0, "#fff3a0");
-    hornGrad.addColorStop(1, "#f5bfff");
-    ctx.fillStyle = hornGrad;
+    // Neck and head with a clear horse-like muzzle.
+    ctx.fillStyle = outline;
     ctx.beginPath();
-    ctx.moveTo(51, -71); ctx.lineTo(80, -88); ctx.lineTo(57, -65); ctx.closePath();
-    ctx.fill();
+    ctx.moveTo(20, -58); ctx.bezierCurveTo(27, -75, 33, -83, 47, -83);
+    ctx.bezierCurveTo(67, -83, 72, -67, 63, -55);
+    ctx.bezierCurveTo(55, -44, 39, -43, 25, -48); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#fffdfd";
+    ctx.beginPath();
+    ctx.moveTo(22, -58); ctx.bezierCurveTo(29, -72, 35, -79, 48, -79);
+    ctx.bezierCurveTo(64, -79, 67, -67, 59, -58);
+    ctx.bezierCurveTo(51, -49, 39, -48, 27, -51); ctx.closePath(); ctx.fill();
 
-    for (let i = 0; i < rainbow.length; i++) {
-      ctx.strokeStyle = rainbow[i];
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.moveTo(24 - i * 1.2, -72 + i * 2.5);
-      ctx.quadraticCurveTo(6 - i * 1.5, -82 + Math.sin(phase + i) * 3, -2 - i * 0.8, -61 + i * 2);
-      ctx.stroke();
+    // Rounded muzzle.
+    ctx.fillStyle = outline;
+    ctx.beginPath(); ctx.ellipse(61, -57, 23, 16, -0.08, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#fffdfd";
+    ctx.beginPath(); ctx.ellipse(60, -57, 20, 13, -0.08, 0, Math.PI * 2); ctx.fill();
+
+    // Ears.
+    ctx.fillStyle = outline;
+    ctx.beginPath(); ctx.moveTo(42, -78); ctx.lineTo(39, -98); ctx.lineTo(53, -82); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(55, -78); ctx.lineTo(61, -97); ctx.lineTo(66, -77); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#fffdfd";
+    ctx.beginPath(); ctx.moveTo(44, -80); ctx.lineTo(41, -93); ctx.lineTo(51, -81); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(57, -80); ctx.lineTo(61, -92); ctx.lineTo(64, -78); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#f47cae";
+    ctx.beginPath(); ctx.moveTo(45, -82); ctx.lineTo(43, -90); ctx.lineTo(49, -82); ctx.closePath(); ctx.fill();
+
+    // Tall striped horn.
+    ctx.fillStyle = outline;
+    ctx.beginPath(); ctx.moveTo(49, -91); ctx.lineTo(56, -126); ctx.lineTo(63, -88); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#ffe261";
+    ctx.beginPath(); ctx.moveTo(51.5, -91); ctx.lineTo(56.3, -120); ctx.lineTo(60.5, -90); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = "#d99a37";
+    ctx.lineWidth = 2;
+    for (let yy = -112; yy <= -96; yy += 7) {
+      ctx.beginPath(); ctx.moveTo(53.5, yy); ctx.lineTo(59.5, yy + 3); ctx.stroke();
     }
 
-    ctx.fillStyle = "#4c3d5e";
-    ctx.beginPath(); ctx.arc(43, -62, 2.2, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,.9)";
-    ctx.beginPath(); ctx.arc(43.8, -62.8, 0.7, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#f4a7bb";
-    ctx.beginPath(); ctx.ellipse(54, -53, 3.6, 2.2, 0, 0, Math.PI * 2); ctx.fill();
+    // Rainbow mane sweeping down the neck.
+    const maneCurves = [
+      {c:"#63bed8", ox:-8, oy:-8},
+      {c:"#f36ba7", ox:-4, oy:0},
+      {c:"#ffe168", ox:0, oy:8},
+      {c:"#9563bc", ox:4, oy:16}
+    ];
+    maneCurves.forEach(m => {
+      ctx.strokeStyle = outline; ctx.lineWidth = 12;
+      ctx.beginPath();
+      ctx.moveTo(43 + m.ox * 0.2, -82 + m.oy * 0.15);
+      ctx.bezierCurveTo(25 + m.ox, -85 + m.oy, 15 + m.ox, -66 + m.oy, 22 + m.ox, -49 + m.oy);
+      ctx.stroke();
+      ctx.strokeStyle = m.c; ctx.lineWidth = 7.5; ctx.stroke();
+    });
+
+    // Friendly face.
+    ctx.strokeStyle = outline;
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(53, -69, 5, 0.15, 2.6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(48, -73); ctx.lineTo(45, -76); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(52, -74); ctx.lineTo(51, -78); ctx.stroke();
+    ctx.fillStyle = "#f47cad";
+    ctx.beginPath(); ctx.ellipse(59, -62, 7, 4.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = outline;
+    ctx.beginPath(); ctx.arc(72, -57, 1.8, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = outline;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(67, -51, 8, 0.25, 1.35); ctx.stroke();
+
+    // Heart marking.
+    ctx.fillStyle = "#ef6aa5";
+    ctx.save(); ctx.translate(-5, -48); ctx.scale(0.8, 0.8);
+    ctx.beginPath();
+    ctx.moveTo(0, 5);
+    ctx.bezierCurveTo(-12, -4, -16, 8, 0, 20);
+    ctx.bezierCurveTo(16, 8, 12, -4, 0, 5);
+    ctx.fill();
+    ctx.restore();
 
     if (withRider) {
       ctx.save();
-      ctx.translate(-7, -88);
+      ctx.translate(-4, -91);
       drawGirl(0, 0, characters[selectedCharacter], 0.82, 1, phase * 1.2, false);
       ctx.restore();
     }
@@ -2504,16 +2732,25 @@
     ctx.restore();
   }
 
-  function drawSnowball(x, y, spin = 0) {
+  function drawSnowball(x, y, spin = 0, grounded = false) {
     ctx.save();
     ctx.translate(x, y);
+    if (grounded) {
+      ctx.fillStyle = "rgba(40,70,100,.16)";
+      ctx.beginPath(); ctx.ellipse(0, 12, 16, 5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.55 + Math.sin(frame * 0.12) * 0.18;
+      ctx.strokeStyle = "#fff6a8";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(0, 0, 16, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
     ctx.rotate(spin);
-    ctx.fillStyle = "rgba(218,249,255,.95)";
+    ctx.fillStyle = "rgba(218,249,255,.97)";
     ctx.shadowColor = "#9eeeff";
-    ctx.shadowBlur = 14;
+    ctx.shadowBlur = grounded ? 9 : 14;
     ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill();
     ctx.shadowBlur = 0;
-    ctx.fillStyle = "rgba(255,255,255,.85)";
+    ctx.fillStyle = "rgba(255,255,255,.88)";
     ctx.beginPath(); ctx.arc(-4, -4, 4, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = "rgba(120,220,255,.85)";
     ctx.lineWidth = 1.4;
