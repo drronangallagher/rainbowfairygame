@@ -941,10 +941,8 @@
 
   let touchControlsEnabled = true;
   function isTouchCapable() {
-    return (navigator.maxTouchPoints || 0) > 0 ||
-           ("ontouchstart" in window) ||
-           matchMedia("(pointer: coarse)").matches ||
-           matchMedia("(any-pointer: coarse)").matches;
+    // Android-safe: do not depend on matchMedia during startup.
+    return (navigator.maxTouchPoints || 0) > 0 || ("ontouchstart" in window);
   }
   function markTouchDevice() {
     document.documentElement.classList.add("touch-enabled");
