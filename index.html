@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Rainbow Magic Fairy Hunt - Android Touch Fix</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#15142d" />
+<title>Rainbow Magic Fairy Hunt - Deluxe</title>
 <style>
   :root {
     color-scheme: dark;
@@ -49,7 +50,7 @@
     right: 12px;
     display: flex;
     gap: 8px;
-    z-index: 12;
+    z-index: 3;
   }
   .uiBtn {
     appearance: none;
@@ -87,35 +88,6 @@
     backdrop-filter: blur(5px);
   }
   #tip strong { color: white; }
-
-  /* Touch controls */
-  #touchControls {display:none; position:absolute; inset:0; z-index:8; pointer-events:none; user-select:none; -webkit-user-select:none; touch-action:none;}
-  #touchControls.active {display:block;}
-  #touchJoystick {position:absolute; left:max(20px, env(safe-area-inset-left)); bottom:max(18px, env(safe-area-inset-bottom)); width:176px; height:176px; border-radius:50%; pointer-events:auto; touch-action:none; background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.12) 0 34%,rgba(255,255,255,.035) 35% 100%),rgba(12,16,45,.48); border:3px solid rgba(255,255,255,.34); box-shadow:inset 0 0 28px rgba(255,255,255,.08),0 8px 28px rgba(0,0,0,.28); backdrop-filter:blur(5px);}
-  #touchJoystick::before,#touchJoystick::after {content:""; position:absolute; background:rgba(255,255,255,.13); border-radius:999px; pointer-events:none;}
-  #touchJoystick::before {left:50%; top:14px; bottom:14px; width:2px; transform:translateX(-50%);}
-  #touchJoystick::after {top:50%; left:14px; right:14px; height:2px; transform:translateY(-50%);}
-  #touchStickKnob {position:absolute; width:78px; height:78px; left:49px; top:49px; border-radius:50%; background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.5),rgba(167,139,255,.72) 34%,rgba(74,53,148,.9)); border:3px solid rgba(255,255,255,.62); box-shadow:0 7px 20px rgba(0,0,0,.32); pointer-events:none; transform:translate(0,0); will-change:transform;}
-  #touchStickLabel {position:absolute; width:100%; left:0; bottom:-22px; text-align:center; font-size:11px; font-weight:800; color:rgba(255,255,255,.82); text-shadow:0 1px 3px #000; pointer-events:none;}
-  #touchActions {position:absolute; right:max(18px, env(safe-area-inset-right)); bottom:max(16px, env(safe-area-inset-bottom)); width:285px; height:205px; pointer-events:none;}
-  .touchAction {position:absolute; pointer-events:auto; touch-action:none; border:3px solid rgba(255,255,255,.55); color:white; font-family:inherit; font-weight:900; text-shadow:0 2px 3px rgba(0,0,0,.45); box-shadow:0 7px 22px rgba(0,0,0,.32),inset 0 0 18px rgba(255,255,255,.12); backdrop-filter:blur(5px); -webkit-tap-highlight-color:transparent;}
-  .touchAction:active,.touchAction.pressed {transform:scale(.91); filter:brightness(1.22);}
-  .touchAction .letter {display:block; font-size:30px; line-height:30px;}
-  .touchAction .actionName {display:block; font-size:10px; line-height:13px; margin-top:3px; letter-spacing:.3px;}
-  #touchJump {width:102px; height:102px; right:0; bottom:0; border-radius:50%; background:rgba(235,76,100,.78);}
-  #touchMount {width:84px; height:84px; right:110px; bottom:4px; border-radius:50%; background:rgba(78,172,236,.78);}
-  #touchThrow {width:84px; height:84px; right:72px; bottom:104px; border-radius:50%; background:rgba(248,191,59,.82);}
-  #touchPause {width:56px; height:56px; right:0; bottom:124px; border-radius:50%; background:rgba(47,42,88,.76); font-size:22px;}
-  html.touch-enabled #touchControls.active, html.touch-forced #touchControls.active {display:block!important;}
-  #touchToggleBtn {display:none;}
-  @media (max-width:900px), (pointer:coarse), (any-pointer:coarse) { #touchToggleBtn {display:inline-block;} }
-  html.touch-enabled #touchToggleBtn, html.touch-forced #touchToggleBtn {display:inline-block;}
-  @media (max-width:760px),(max-height:520px) {
-    #touchJoystick {width:144px;height:144px;left:12px;bottom:12px;}
-    #touchStickKnob {width:64px;height:64px;left:37px;top:37px;}
-    #touchActions {right:10px;bottom:9px;width:236px;height:172px;transform:scale(.88);transform-origin:right bottom;}
-  }
-
   @media (max-width: 720px) {
     body { padding: 0; background: #111; }
     canvas { border-radius: 0; }
@@ -123,6 +95,161 @@
     #uiBar { top: 8px; right: 8px; }
     .uiBtn { padding: 8px 11px; font-size: 12px; }
   }
+
+
+  /* Touchscreen controls rebuilt from the known-good tablet layout */
+  #touchControls {
+    display: none;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 5px 24px max(5px, env(safe-area-inset-bottom));
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  #touchStick {
+    --stick-x: 0px;
+    --stick-y: 0px;
+    width: 208px;
+    height: 208px;
+    flex: 0 0 208px;
+    position: relative;
+    border-radius: 50%;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(255,255,255,.08) 0 31%, transparent 32%),
+      radial-gradient(circle at 50% 50%, rgba(91,69,151,.94) 0 66%, rgba(31,25,74,.97) 67% 100%);
+    border: 2px solid rgba(255,255,255,.24);
+    box-shadow: inset 0 0 0 7px rgba(255,255,255,.035), 0 8px 24px rgba(0,0,0,.30);
+  }
+  .touchDir {
+    position: absolute;
+    width: 62px;
+    height: 62px;
+    display: grid;
+    place-items: center;
+    border-radius: 20px;
+    background: rgba(255,255,255,.07);
+    color: rgba(255,255,255,.72);
+    font: 950 29px/1 system-ui, sans-serif;
+    pointer-events: none;
+  }
+  .touchDir.active { background: rgba(255,225,118,.86); color: #36265f; transform: scale(1.05); }
+  .touchDir.up { left: 73px; top: 7px; }
+  .touchDir.down { left: 73px; bottom: 7px; }
+  .touchDir.left { left: 7px; top: 73px; }
+  .touchDir.right { right: 7px; top: 73px; }
+  #touchKnob {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 78px;
+    height: 78px;
+    margin: -39px 0 0 -39px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(160deg, #ff8fc5, #896eff 72%);
+    border: 3px solid rgba(255,255,255,.72);
+    color: white;
+    font-size: 34px;
+    box-shadow: 0 7px 20px rgba(0,0,0,.34), inset 0 2px 5px rgba(255,255,255,.34);
+    transform: translate(var(--stick-x), var(--stick-y));
+    transition: transform .08s ease-out;
+    pointer-events: none;
+    z-index: 3;
+  }
+  #touchStick.tracking #touchKnob { transition: none; }
+  .touchActions {
+    display: grid;
+    grid-template-columns: 86px 106px;
+    grid-template-rows: 86px 106px;
+    gap: 10px 14px;
+    align-items: end;
+    justify-items: center;
+    margin-left: auto;
+  }
+  .touchAction {
+    appearance: none;
+    width: 86px;
+    height: 86px;
+    min-height: 86px;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,.62);
+    color: white;
+    font-family: inherit;
+    font-weight: 900;
+    text-shadow: 0 2px 3px rgba(0,0,0,.45);
+    box-shadow: 0 7px 22px rgba(0,0,0,.32), inset 0 0 18px rgba(255,255,255,.12);
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    padding: 0;
+  }
+  .touchAction strong { display:block; font-size:27px; line-height:28px; }
+  .touchAction span { display:block; font-size:9px; line-height:12px; margin-top:3px; letter-spacing:.2px; }
+  .touchAction.pressed { transform: scale(.91); filter: brightness(1.2); }
+  #touchMountBtn { background: rgba(73,165,235,.84); grid-column:1; grid-row:2; }
+  #touchThrowBtn { background: rgba(248,190,55,.88); grid-column:1; grid-row:1; }
+  #touchJumpBtn { width:106px; height:106px; min-height:106px; background: rgba(235,76,100,.86); grid-column:2; grid-row:2; }
+  #touchJumpBtn strong { font-size:34px; }
+  #touchPauseBtn { width:58px; height:58px; min-height:58px; background: rgba(47,42,88,.88); grid-column:2; grid-row:1; align-self:center; }
+  #touchPauseBtn strong { font-size:21px; }
+
+  body.touch-capable {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    padding: 0;
+    place-items: stretch;
+    overscroll-behavior: none;
+  }
+  body.touch-capable #wrap {
+    width: 100%;
+    max-width: none;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 3px;
+    padding: 4px max(4px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left));
+  }
+  body.touch-capable canvas {
+    grid-row: 1;
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    justify-self: center;
+    align-self: center;
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+    touch-action: none;
+  }
+  body.touch-capable #touchControls { display: flex; grid-row: 2; }
+  body.touch-capable #tip { display: none; }
+  body.touch-capable #uiBar { top: 8px; right: max(8px, env(safe-area-inset-right)); }
+
+  @media (max-height: 700px) {
+    body.touch-capable #touchControls { padding: 2px 14px max(2px, env(safe-area-inset-bottom)); gap: 12px; }
+    body.touch-capable #touchStick { width: 160px; height: 160px; flex-basis: 160px; }
+    body.touch-capable .touchDir { width: 48px; height: 48px; font-size: 22px; border-radius: 15px; }
+    body.touch-capable .touchDir.up { left: 56px; top: 4px; }
+    body.touch-capable .touchDir.down { left: 56px; bottom: 4px; }
+    body.touch-capable .touchDir.left { left: 4px; top: 56px; }
+    body.touch-capable .touchDir.right { right: 4px; top: 56px; }
+    body.touch-capable #touchKnob { width: 60px; height: 60px; margin: -30px 0 0 -30px; font-size: 26px; }
+    body.touch-capable .touchActions { grid-template-columns: 70px 88px; grid-template-rows: 70px 88px; gap: 7px 10px; }
+    body.touch-capable .touchAction { width:70px; height:70px; min-height:70px; }
+    body.touch-capable #touchJumpBtn { width:88px; height:88px; min-height:88px; }
+    body.touch-capable #touchPauseBtn { width:50px; height:50px; min-height:50px; }
+  }
+
 </style>
 </head>
 <body>
@@ -132,23 +259,28 @@
     <button id="soundBtn" class="uiBtn" type="button">SFX: On</button>
     <button id="musicBtn" class="uiBtn" type="button">Music: On</button>
     <button id="fsBtn" class="uiBtn" type="button">Full Screen</button>
-    <button id="touchToggleBtn" class="uiBtn" type="button">Touch: On</button>
   </div>
-
-  <div id="touchControls" aria-label="Touch controls">
-    <div id="touchJoystick" aria-label="Movement joystick"><div id="touchStickKnob"></div><div id="touchStickLabel">MOVE / CLIMB</div></div>
-    <div id="touchActions">
-      <button id="touchJump" class="touchAction" type="button" aria-label="Jump or confirm"><span class="letter">B</span><span class="actionName">JUMP / OK</span></button>
-      <button id="touchMount" class="touchAction" type="button" aria-label="Mount or dismount unicorn"><span class="letter">X</span><span class="actionName">UNICORN</span></button>
-      <button id="touchThrow" class="touchAction" type="button" aria-label="Pick up or throw snowball"><span class="letter">Y</span><span class="actionName">SNOWBALL</span></button>
-      <button id="touchPause" class="touchAction" type="button" aria-label="Pause">Ⅱ</button>
-    </div>
-  </div>
-
   <div id="tip">
     <span><strong>Keyboard</strong> - A/D move, Up/Down ladders, Space jump, E unicorn, Q snowball, P pause, F full screen</span>
     <span id="padStatus"><strong>Controller</strong> - B jump, X unicorn, Y snowball</span>
   </div>
+
+  <div id="touchControls" aria-label="Touch controls">
+    <div id="touchStick" role="group" aria-label="Movement and climbing joystick">
+      <div class="touchDir up" data-dir="up" aria-hidden="true">▲</div>
+      <div class="touchDir left" data-dir="left" aria-hidden="true">◀</div>
+      <div class="touchDir right" data-dir="right" aria-hidden="true">▶</div>
+      <div class="touchDir down" data-dir="down" aria-hidden="true">▼</div>
+      <div id="touchKnob" aria-hidden="true">✦</div>
+    </div>
+    <div class="touchActions">
+      <button id="touchThrowBtn" class="touchAction" type="button" aria-label="Pick up or throw snowball"><strong>Y</strong><span>SNOWBALL</span></button>
+      <button id="touchPauseBtn" class="touchAction" type="button" aria-label="Pause or resume"><strong>Ⅱ</strong><span>PAUSE</span></button>
+      <button id="touchMountBtn" class="touchAction" type="button" aria-label="Mount or dismount unicorn"><strong>X</strong><span>UNICORN</span></button>
+      <button id="touchJumpBtn" class="touchAction" type="button" aria-label="Jump or confirm"><strong>B</strong><span>JUMP / OK</span></button>
+    </div>
+  </div>
+
 </div>
 <script>
 (() => {
@@ -161,14 +293,16 @@
   const soundBtn = document.getElementById("soundBtn");
   const musicBtn = document.getElementById("musicBtn");
   const fsBtn = document.getElementById("fsBtn");
-  const touchToggleBtn = document.getElementById("touchToggleBtn");
   const touchControls = document.getElementById("touchControls");
-  const touchJoystick = document.getElementById("touchJoystick");
-  const touchStickKnob = document.getElementById("touchStickKnob");
-  const touchJump = document.getElementById("touchJump");
-  const touchMount = document.getElementById("touchMount");
-  const touchThrow = document.getElementById("touchThrow");
-  const touchPause = document.getElementById("touchPause");
+  const touchStick = document.getElementById("touchStick");
+  const touchKnob = document.getElementById("touchKnob");
+  const touchJumpBtn = document.getElementById("touchJumpBtn");
+  const touchMountBtn = document.getElementById("touchMountBtn");
+  const touchThrowBtn = document.getElementById("touchThrowBtn");
+  const touchPauseBtn = document.getElementById("touchPauseBtn");
+
+  const touchCapable = (navigator.maxTouchPoints || 0) > 0 || ("ontouchstart" in window);
+  if (touchCapable) document.body.classList.add("touch-capable");
 
   const W = canvas.width;
   const H = canvas.height;
@@ -270,12 +404,12 @@
     throw: false
   };
 
-  const touchState = {
-    x: 0, y: 0, jump: false, jumpPressed: false,
-    mountPressed: false, throwPressed: false, pausePressed: false,
-    joystickPointerId: null
-  };
-  let previousTouchMenu = { left: false, right: false };
+  const touchInput = { left:false, right:false, up:false, down:false, jump:false, mount:false, throw:false, pause:false };
+  const touchPressed = { left:false, right:false, jump:false, mount:false, throw:false, pause:false };
+  let previousTouch = { left:false, right:false, jump:false, mount:false, throw:false, pause:false };
+  let touchStickPointer = null;
+  const TOUCH_DEAD_ZONE = 0.12;
+  const TOUCH_AXIS_THRESHOLD = 0.28;
 
   function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
   function lerp(a, b, t) { return a + (b - a) * t; }
@@ -838,7 +972,6 @@
     cameraX = 0;
     paused = false;
     state = "playing";
-    updateTouchVisibility();
     message = `Find ${fairies[index].name}!`;
     messageTimer = 170;
     initAudio();
@@ -946,107 +1079,116 @@
   }
 
 
-  let touchControlsEnabled = true;
-  function isTouchCapable() {
-    // Keep startup safe on older Android browsers and embedded WebViews.
-    if ((navigator.maxTouchPoints || 0) > 0 || ("ontouchstart" in window)) return true;
-    if (typeof window.matchMedia === "function") {
-      return window.matchMedia("(pointer: coarse)").matches ||
-             window.matchMedia("(any-pointer: coarse)").matches;
+  function resetTouchStick() {
+    touchInput.left = touchInput.right = touchInput.up = touchInput.down = false;
+    if (touchStick) {
+      touchStick.classList.remove("tracking");
+      touchStick.style.setProperty("--stick-x", "0px");
+      touchStick.style.setProperty("--stick-y", "0px");
+      touchStick.querySelectorAll(".touchDir").forEach(el => el.classList.remove("active"));
     }
-    return false;
   }
-  function markTouchDevice() {
-    document.documentElement.classList.add("touch-enabled");
-  }
-  function updateTouchVisibility() {
-    if (!touchControls) return;
-    const forced = document.documentElement.classList.contains("touch-forced");
-    const shouldShow = touchControlsEnabled && (isTouchCapable() || forced);
-    touchControls.classList.toggle("active", shouldShow);
-    if (touchToggleBtn) touchToggleBtn.textContent = `Touch: ${touchControlsEnabled ? "On" : "Off"}`;
-  }
-  if (isTouchCapable()) markTouchDevice();
-  updateTouchVisibility();
-  addEventListener("touchstart", () => {
-    markTouchDevice();
-    updateTouchVisibility();
-  }, { passive: true });
-  if (touchToggleBtn) {
-    // Keep a manual override available even if Android reports unusual pointer capabilities.
-    touchToggleBtn.style.display = "inline-block";
-    touchToggleBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      document.documentElement.classList.add("touch-forced");
-      touchControlsEnabled = !touchControlsEnabled;
-      updateTouchVisibility();
+
+  function updateTouchStick(clientX, clientY) {
+    if (!touchStick) return;
+    const r = touchStick.getBoundingClientRect();
+    const rawX = clientX - (r.left + r.width / 2);
+    const rawY = clientY - (r.top + r.height / 2);
+    const radius = Math.max(1, Math.min(r.width, r.height) / 2);
+    const nx = rawX / radius;
+    const ny = rawY / radius;
+    const magnitude = Math.hypot(nx, ny);
+    const maxKnob = Math.min(r.width, r.height) * 0.28;
+    const rawMagnitude = Math.hypot(rawX, rawY);
+    const knobScale = rawMagnitude > 0 ? Math.min(1, maxKnob / rawMagnitude) : 0;
+    touchStick.style.setProperty("--stick-x", `${(rawX * knobScale).toFixed(1)}px`);
+    touchStick.style.setProperty("--stick-y", `${(rawY * knobScale).toFixed(1)}px`);
+
+    const wasLeft = touchInput.left;
+    const wasRight = touchInput.right;
+    if (magnitude < TOUCH_DEAD_ZONE) {
+      touchInput.left = touchInput.right = touchInput.up = touchInput.down = false;
+    } else {
+      touchInput.left = nx < -TOUCH_AXIS_THRESHOLD;
+      touchInput.right = nx > TOUCH_AXIS_THRESHOLD;
+      touchInput.up = ny < -TOUCH_AXIS_THRESHOLD;
+      touchInput.down = ny > TOUCH_AXIS_THRESHOLD;
+    }
+    if (touchInput.left && !wasLeft) touchPressed.left = true;
+    if (touchInput.right && !wasRight) touchPressed.right = true;
+    touchStick.querySelectorAll(".touchDir").forEach(el => {
+      el.classList.toggle("active", !!touchInput[el.dataset.dir]);
     });
   }
-  function updateTouchJoystickFromEvent(e) {
-    if (!touchJoystick) return;
-    const r=touchJoystick.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2, maxR=r.width*.34;
-    let dx=e.clientX-cx, dy=e.clientY-cy; const d=Math.hypot(dx,dy);
-    if (d>maxR && d>0) {const k=maxR/d; dx*=k; dy*=k;}
-    touchState.x=clamp(dx/maxR,-1,1); touchState.y=clamp(dy/maxR,-1,1);
-    touchStickKnob.style.transform=`translate(${dx}px, ${dy}px)`;
-  }
-  function releaseTouchJoystick(e) {
-    if (touchState.joystickPointerId!==null && (!e || e.pointerId===touchState.joystickPointerId)) {
-      touchState.joystickPointerId=null; touchState.x=0; touchState.y=0;
-      if (touchStickKnob) touchStickKnob.style.transform="translate(0px, 0px)";
-    }
-  }
-  if (touchJoystick) {
+
+  if (touchStick) {
     if ("PointerEvent" in window) {
-      touchJoystick.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();initAudio();touchState.joystickPointerId=e.pointerId;touchJoystick.setPointerCapture?.(e.pointerId);updateTouchJoystickFromEvent(e);});
-      touchJoystick.addEventListener("pointermove",e=>{if(e.pointerId!==touchState.joystickPointerId)return;e.preventDefault();updateTouchJoystickFromEvent(e);});
-      touchJoystick.addEventListener("pointerup",e=>{e.preventDefault();releaseTouchJoystick(e);});
-      touchJoystick.addEventListener("pointercancel",releaseTouchJoystick);
-      touchJoystick.addEventListener("lostpointercapture",releaseTouchJoystick);
+      touchStick.addEventListener("pointerdown", e => {
+        if (!touchCapable && e.pointerType === "mouse") return;
+        e.preventDefault(); initAudio();
+        touchStickPointer = e.pointerId;
+        touchStick.classList.add("tracking");
+        try { touchStick.setPointerCapture(e.pointerId); } catch (_) {}
+        updateTouchStick(e.clientX, e.clientY);
+      });
+      touchStick.addEventListener("pointermove", e => {
+        if (e.pointerId !== touchStickPointer) return;
+        e.preventDefault(); updateTouchStick(e.clientX, e.clientY);
+      });
+      const endStick = e => {
+        if (e.pointerId !== touchStickPointer) return;
+        e.preventDefault(); touchStickPointer = null; resetTouchStick();
+      };
+      touchStick.addEventListener("pointerup", endStick);
+      touchStick.addEventListener("pointercancel", endStick);
+      touchStick.addEventListener("lostpointercapture", () => { touchStickPointer = null; resetTouchStick(); });
     } else {
-      // Legacy Android/WebView fallback when Pointer Events are unavailable.
-      touchJoystick.addEventListener("touchstart",e=>{const t=e.changedTouches[0];if(!t)return;e.preventDefault();e.stopPropagation();initAudio();touchState.joystickPointerId=t.identifier;updateTouchJoystickFromEvent(t);},{passive:false});
-      touchJoystick.addEventListener("touchmove",e=>{let t=[...e.changedTouches].find(t=>t.identifier===touchState.joystickPointerId);if(!t)return;e.preventDefault();updateTouchJoystickFromEvent(t);},{passive:false});
-      const finish=e=>{e.preventDefault();releaseTouchJoystick();};
-      touchJoystick.addEventListener("touchend",finish,{passive:false});
-      touchJoystick.addEventListener("touchcancel",finish,{passive:false});
+      touchStick.addEventListener("touchstart", e => {
+        const t=e.changedTouches[0]; if(!t)return;
+        e.preventDefault(); initAudio(); touchStickPointer=t.identifier;
+        touchStick.classList.add("tracking"); updateTouchStick(t.clientX,t.clientY);
+      }, {passive:false});
+      touchStick.addEventListener("touchmove", e => {
+        const t=Array.from(e.changedTouches).find(t=>t.identifier===touchStickPointer); if(!t)return;
+        e.preventDefault(); updateTouchStick(t.clientX,t.clientY);
+      }, {passive:false});
+      const endStickTouch=e=>{ e.preventDefault(); touchStickPointer=null; resetTouchStick(); };
+      touchStick.addEventListener("touchend",endStickTouch,{passive:false});
+      touchStick.addEventListener("touchcancel",endStickTouch,{passive:false});
     }
   }
-  function bindTouchAction(el, heldKey, pressedKey) {
-    if (!el) return;
-    const press=()=>{initAudio();el.classList.add("pressed");if(heldKey)touchState[heldKey]=true;if(pressedKey)touchState[pressedKey]=true;};
-    const release=()=>{el.classList.remove("pressed");if(heldKey)touchState[heldKey]=false;};
+
+  function bindTouchButton(button, key) {
+    if (!button) return;
+    let pointerId = null;
+    const press = () => { initAudio(); touchInput[key] = true; touchPressed[key] = true; button.classList.add("pressed"); };
+    const release = () => { touchInput[key] = false; button.classList.remove("pressed"); };
     if ("PointerEvent" in window) {
-      el.addEventListener("pointerdown",e=>{e.preventDefault();e.stopPropagation();el.setPointerCapture?.(e.pointerId);press();});
-      el.addEventListener("pointerup",e=>{e.preventDefault();e.stopPropagation();release();});
-      el.addEventListener("pointercancel",release);
-      el.addEventListener("lostpointercapture",release);
+      button.addEventListener("pointerdown", e => {
+        if (!touchCapable && e.pointerType === "mouse") return;
+        e.preventDefault(); e.stopPropagation(); pointerId=e.pointerId; press();
+        try { button.setPointerCapture(e.pointerId); } catch (_) {}
+      });
+      button.addEventListener("pointerup", e => { if(pointerId!==null && e.pointerId!==pointerId)return; e.preventDefault(); pointerId=null; release(); });
+      button.addEventListener("pointercancel", () => { pointerId=null; release(); });
+      button.addEventListener("lostpointercapture", () => { pointerId=null; release(); });
     } else {
-      el.addEventListener("touchstart",e=>{e.preventDefault();e.stopPropagation();press();},{passive:false});
-      el.addEventListener("touchend",e=>{e.preventDefault();e.stopPropagation();release();},{passive:false});
-      el.addEventListener("touchcancel",release,{passive:false});
+      button.addEventListener("touchstart", e => { e.preventDefault(); e.stopPropagation(); press(); }, {passive:false});
+      button.addEventListener("touchend", e => { e.preventDefault(); e.stopPropagation(); release(); }, {passive:false});
+      button.addEventListener("touchcancel", release, {passive:false});
     }
   }
-  bindTouchAction(touchJump,"jump","jumpPressed");
-  bindTouchAction(touchMount,null,"mountPressed");
-  bindTouchAction(touchThrow,null,"throwPressed");
-  bindTouchAction(touchPause,null,"pausePressed");
+  bindTouchButton(touchJumpBtn, "jump");
+  bindTouchButton(touchMountBtn, "mount");
+  bindTouchButton(touchThrowBtn, "throw");
+  bindTouchButton(touchPauseBtn, "pause");
 
   function getInput() {
-    let left = keys.has("ArrowLeft") || keys.has("KeyA");
-    let right = keys.has("ArrowRight") || keys.has("KeyD");
-    let up = keys.has("ArrowUp") || keys.has("KeyW");
-    let down = keys.has("ArrowDown") || keys.has("KeyS");
-    let jumpHeld = keys.has("Space") || keys.has("KeyZ");
-    const touchDead = 0.22;
-    const touchLeftNow = touchState.x < -touchDead;
-    const touchRightNow = touchState.x > touchDead;
-    if (touchLeftNow) left = true;
-    if (touchRightNow) right = true;
-    if (touchState.y < -touchDead) up = true;
-    if (touchState.y > touchDead) down = true;
-    jumpHeld ||= touchState.jump;
+    let left = keys.has("ArrowLeft") || keys.has("KeyA") || touchInput.left;
+    let right = keys.has("ArrowRight") || keys.has("KeyD") || touchInput.right;
+    let up = keys.has("ArrowUp") || keys.has("KeyW") || touchInput.up;
+    let down = keys.has("ArrowDown") || keys.has("KeyS") || touchInput.down;
+    let jumpHeld = keys.has("Space") || keys.has("KeyZ") || touchInput.jump;
     let padJump = false;
     let padStart = false;
     let padConfirm = false;
@@ -1082,18 +1224,24 @@
       jumpHeld ||= padJump;
     }
 
-    const jumpPressed = touchState.jumpPressed || (keysPressed.has("Space") || keysPressed.has("KeyZ")) || (padJump && !previousPad.jump);
-    const mountPressed = touchState.mountPressed || keysPressed.has("KeyE") || (padMount && !previousPad.mount);
-    const throwPressed = touchState.throwPressed || keysPressed.has("KeyQ") || (padThrow && !previousPad.throw);
-    const confirmPressed = touchState.jumpPressed || keysPressed.has("Enter") || (padConfirm && !previousPad.confirm);
-    const startPressed = touchState.pausePressed || keysPressed.has("KeyP") || (padStart && !previousPad.start);
-    const menuLeftPressed = keysPressed.has("ArrowLeft") || keysPressed.has("KeyA") || (padLeft && !previousPad.left) || (touchLeftNow && !previousTouchMenu.left);
-    const menuRightPressed = keysPressed.has("ArrowRight") || keysPressed.has("KeyD") || (padRight && !previousPad.right) || (touchRightNow && !previousTouchMenu.right);
+    const touchJumpPressed = touchPressed.jump || (touchInput.jump && !previousTouch.jump);
+    const touchMountPressed = touchPressed.mount || (touchInput.mount && !previousTouch.mount);
+    const touchThrowPressed = touchPressed.throw || (touchInput.throw && !previousTouch.throw);
+    const touchPausePressed = touchPressed.pause || (touchInput.pause && !previousTouch.pause);
+    const touchLeftPressed = touchPressed.left || (touchInput.left && !previousTouch.left);
+    const touchRightPressed = touchPressed.right || (touchInput.right && !previousTouch.right);
+    const jumpPressed = (keysPressed.has("Space") || keysPressed.has("KeyZ")) || (padJump && !previousPad.jump) || touchJumpPressed;
+    const mountPressed = keysPressed.has("KeyE") || (padMount && !previousPad.mount) || touchMountPressed;
+    const throwPressed = keysPressed.has("KeyQ") || (padThrow && !previousPad.throw) || touchThrowPressed;
+    const confirmPressed = keysPressed.has("Enter") || (padConfirm && !previousPad.confirm) || touchJumpPressed;
+    const startPressed = keysPressed.has("KeyP") || (padStart && !previousPad.start) || touchPausePressed;
+    const menuLeftPressed = keysPressed.has("ArrowLeft") || keysPressed.has("KeyA") || (padLeft && !previousPad.left) || touchLeftPressed;
+    const menuRightPressed = keysPressed.has("ArrowRight") || keysPressed.has("KeyD") || (padRight && !previousPad.right) || touchRightPressed;
     const fullscreenPressed = keysPressed.has("KeyF") || (padFs && !previousPad.fullscreen);
 
     previousPad = { jump: padJump, start: padStart, left: padLeft, right: padRight, confirm: padConfirm, fullscreen: padFs, mount: padMount, throw: padThrow };
-    previousTouchMenu = { left: touchLeftNow, right: touchRightNow };
-    touchState.jumpPressed=false; touchState.mountPressed=false; touchState.throwPressed=false; touchState.pausePressed=false;
+    previousTouch = { left:touchInput.left, right:touchInput.right, jump:touchInput.jump, mount:touchInput.mount, throw:touchInput.throw, pause:touchInput.pause };
+    touchPressed.left = touchPressed.right = touchPressed.jump = touchPressed.mount = touchPressed.throw = touchPressed.pause = false;
     return { left, right, up, down, jumpHeld, jumpPressed, mountPressed, throwPressed, confirmPressed, startPressed, menuLeftPressed, menuRightPressed, fullscreenPressed };
   }
 
@@ -1106,7 +1254,11 @@
     if (e.code === "KeyN") toggleMusic();
   });
   addEventListener("keyup", (e) => keys.delete(e.code));
-  addEventListener("blur", () => { touchState.x=0; touchState.y=0; touchState.jump=false; releaseTouchJoystick(); });
+  addEventListener("blur", () => {
+    touchInput.left = touchInput.right = touchInput.up = touchInput.down = false;
+    touchInput.jump = touchInput.mount = touchInput.throw = touchInput.pause = false;
+    resetTouchStick();
+  });
   addEventListener("gamepadconnected", (e) => {
     gamepadName = e.gamepad.id || "Gamepad";
     padStatus.innerHTML = `<strong>Controller</strong> - ${gamepadName.slice(0, 30)} | B jump | X unicorn | Y snowball`;
@@ -1121,11 +1273,11 @@
   musicBtn.addEventListener("click", () => { initAudio(); toggleMusic(); });
   fsBtn.addEventListener("click", () => { initAudio(); toggleFullscreen(); });
 
-  function handleCanvasPress(clientX, clientY) {
+  canvas.addEventListener("pointerdown", (e) => {
     initAudio();
     const r = canvas.getBoundingClientRect();
-    const x = (clientX - r.left) * W / r.width;
-    const y = (clientY - r.top) * H / r.height;
+    const x = (e.clientX - r.left) * W / r.width;
+    const y = (e.clientY - r.top) * H / r.height;
     if (state === "title") {
       state = "select";
       playSfx(500, 0.05, "triangle", 0.025);
@@ -1146,20 +1298,10 @@
       totalGems = 0;
     }
     canvas.focus();
-  }
-  if ("PointerEvent" in window) {
-    canvas.addEventListener("pointerdown", e => handleCanvasPress(e.clientX, e.clientY));
-  } else {
-    canvas.addEventListener("touchstart", e => {
-      const t=e.changedTouches[0]; if(!t)return;
-      e.preventDefault(); handleCanvasPress(t.clientX,t.clientY);
-    }, {passive:false});
-    canvas.addEventListener("mousedown", e => handleCanvasPress(e.clientX,e.clientY));
-  }
+  });
 
   function update(dt) {
     frame++;
-    updateTouchVisibility();
     const input = getInput();
     if (input.fullscreenPressed) toggleFullscreen();
     updateMusic(dt);
